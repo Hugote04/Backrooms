@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where 7z)",
+      "Bash(powershell -Command \"Expand-Archive -Path ''C:\\\\Users\\\\marin\\\\Downloads\\\\Windows.rar'' -DestinationPath ''C:\\\\Users\\\\marin\\\\Downloads\\\\Windows_extracted'' -Force\")",
+      "Bash(npm list:*)",
+      "Bash(npm -v)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import rarfile; print\\(''ok''\\)\")",
+      "Read(//c/Program Files/WinRAR/**)",
+      "Read(//c/Program Files \\(x86\\)/WinRAR/**)",
+      "Bash(powershell -Command \"winget install 7zip.7zip --accept-package-agreements --accept-source-agreements\")",
+      "Bash(git -C \"C:\\\\Users\\\\marin\\\\Documents\\\\Backrooms\\\\Backrooms\\\\.claude\\\\worktrees\\\\competent-brattain\" log --oneline --all)",
+      "Bash(java --version)",
+      "Bash(ng version:*)",
+      "Bash(java -version)",
+      "Bash(mvn --version)",
+      "Bash(gradle --version)",
+      "Bash(powershell -Command \"winget install Microsoft.OpenJDK.21 --accept-package-agreements --accept-source-agreements\")",
+      "Bash(export JAVA_HOME=\"/c/Program Files/Microsoft/jdk-21.0.10.7-hotspot\")",
+      "Bash(\"$JAVA_HOME/bin/java\" -version)",
+      "Bash(curl -s \"https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=3.4.5&baseDir=backend&groupId=com.backrooms&artifactId=lurking&name=lurking&description=Lurking+In+The+Shadows+Web+API&packageName=com.backrooms.lurking&packaging=jar&javaVersion=21&dependencies=web,security,data-jpa,postgresql,validation,lombok\" -o backend.zip)",
+      "Bash(ng new:*)",
+      "Bash(rm backend.zip)",
+      "Bash(curl -s \"https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=3.5.3&baseDir=backend&groupId=com.backrooms&artifactId=lurking&name=lurking&description=Lurking+In+The+Shadows+Web+API&packageName=com.backrooms.lurking&packaging=jar&javaVersion=21&dependencies=web,security,data-jpa,postgresql,validation,lombok\" -o backend.zip)",
+      "Bash(unzip -o backend.zip)",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(chmod +x mvnw)",
+      "Bash(./mvnw compile:*)",
+      "Bash(npx ng:*)"
+    ]
+  }
+}
