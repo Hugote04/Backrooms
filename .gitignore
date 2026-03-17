@@ -1,2 +1,61 @@
-.claude/*
+.claude/
 
+# Java / Spring Boot
+*.class
+*.jar
+*.war
+*.ear
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/repository/
+
+# Maven
+.mvn/timing.properties
+
+# Gradle
+.gradle/
+build/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+.sass-cache/
+tmp/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment / Secrets
+.env
+.env.local
+.env.*.local
+application-prod.yml
+*.key
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Test coverage
+coverage/
+*.lcov
