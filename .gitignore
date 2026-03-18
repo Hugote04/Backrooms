@@ -59,3 +59,7 @@ logs/
 # Test coverage
 coverage/
 *.lcov
+
+.mcp.json
+
+.claude/*
