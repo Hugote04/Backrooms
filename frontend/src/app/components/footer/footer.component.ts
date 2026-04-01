@@ -83,7 +83,7 @@ export class FooterComponent {
 
   columns: FooterColumn[] = [
     {
-      title: 'Enlances Rápidos',
+      title: 'Enlaces Rápidos',
       links: [
         { label: 'Características', href: '#features' },
         { label: 'Descargar',       href: '#descarga'  },
