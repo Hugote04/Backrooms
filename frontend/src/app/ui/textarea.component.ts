@@ -42,9 +42,9 @@ export class TextareaComponent implements ControlValueAccessor {
 
   get computedClass() {
     return cn(
-      'w-full bg-orange-500/10 border border-orange-500/20 rounded-md px-4 py-3',
-      'text-orange-100 placeholder:text-orange-100/40 resize-none',
-      'focus:outline-none focus:border-orange-500/60 focus:bg-orange-500/15',
+      'w-full bg-[#0e0d04] border border-[#d4c87a]/20 px-4 py-3 resize-none',
+      'text-[#d4c87a] font-mono text-sm placeholder:text-[#3a3620]',
+      'focus:outline-none focus:border-[#d4c87a]/60 focus:ring-0',
       'transition-all duration-200 disabled:opacity-50',
       this.class
     );

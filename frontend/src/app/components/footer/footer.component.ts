@@ -7,18 +7,19 @@ interface FooterColumn { title: string; links: FooterLink[]; }
   selector: 'app-footer',
   standalone: true,
   template: `
-    <footer class="border-t border-orange-500/20 bg-black py-16">
+    <footer class="border-t border-[#d4c87a]/10 bg-[#050500] py-16">
       <div class="container mx-auto px-4">
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
           <!-- Marca -->
           <div>
-            <div class="text-xl font-bold bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent mb-1">
+            <div class="text-base font-bold tracking-[0.2em] text-[#d4c87a] mb-1 flicker-slow"
+                 style="font-family: 'Space Mono', monospace;">
               BACKROOMS
             </div>
-            <div class="text-orange-500/60 text-xs tracking-widest mb-4">LURKING IN THE SHADOWS</div>
-            <p class="text-orange-100/50 text-sm leading-relaxed">
+            <div class="text-[#5a5828] text-xs tracking-[0.3em] mb-4 font-mono">LURKING IN THE SHADOWS</div>
+            <p class="text-[#5a5828] font-mono text-xs leading-relaxed">
               La experiencia definitiva de horror liminal. Explora las habitaciones infinitas,
               sobrevive a lo desconocido.
             </p>
@@ -28,8 +29,8 @@ interface FooterColumn { title: string; links: FooterLink[]; }
                   [href]="social.href"
                   [attr.aria-label]="social.label"
                   target="_blank" rel="noopener"
-                  class="p-2 rounded-md border border-orange-500/20 text-orange-400/60
-                         hover:border-orange-500/50 hover:text-orange-300 transition-all duration-200"
+                  class="p-2 border border-[#d4c87a]/15 text-[#5a5828]
+                         hover:border-[#d4c87a]/40 hover:text-[#d4c87a] transition-all duration-200"
                   [innerHTML]="social.svg"
                 ></a>
               }
@@ -38,11 +39,12 @@ interface FooterColumn { title: string; links: FooterLink[]; }
 
           @for (col of columns; track col.title) {
             <div>
-              <h4 class="text-orange-100 font-semibold mb-4 text-sm uppercase tracking-wider">{{ col.title }}</h4>
+              <h4 class="text-[#8b7a2e] font-mono text-xs tracking-widest uppercase mb-4">{{ col.title }}</h4>
               <ul class="space-y-2.5">
                 @for (link of col.links; track link.label) {
                   <li>
-                    <a [href]="link.href" class="text-orange-100/50 hover:text-orange-300 text-sm transition-colors duration-200">
+                    <a [href]="link.href"
+                       class="text-[#5a5828] hover:text-[#d4c87a] font-mono text-xs transition-colors duration-200">
                       {{ link.label }}
                     </a>
                   </li>
@@ -53,10 +55,12 @@ interface FooterColumn { title: string; links: FooterLink[]; }
 
         </div>
 
-        <div class="border-t border-orange-500/10 pt-8 flex flex-col sm:flex-row
-                    items-center justify-between gap-4 text-orange-100/30 text-sm">
-          <span>&copy; {{ year }} Backrooms: Lurking In The Shadows. Todos los derechos reservados.</span>
-          <span class="text-orange-500/30 text-xs">Hecho con miedo y café.</span>
+        <div class="border-t border-[#d4c87a]/10 pt-8 flex flex-col sm:flex-row
+                    items-center justify-between gap-4">
+          <span class="text-[#3a3620] font-mono text-xs">
+            &copy; {{ year }} Backrooms: Lurking In The Shadows. Todos los derechos reservados.
+          </span>
+          <span class="text-[#3a3620] font-mono text-xs flicker">Hecho con miedo y café.</span>
         </div>
 
       </div>
@@ -94,10 +98,10 @@ export class FooterComponent {
     {
       title: 'Soporte',
       links: [
-        { label: 'FAQ',                href: '#faq'     },
-        { label: 'Contacto',           href: '#contact' },
-        { label: 'Reportar un bug',    href: '#'        },
-        { label: 'Wiki de la comunidad', href: '#'      },
+        { label: 'FAQ',                  href: '#faq'     },
+        { label: 'Contacto',             href: '#contact' },
+        { label: 'Reportar un bug',      href: '#'        },
+        { label: 'Wiki de la comunidad', href: '#'        },
       ],
     },
     {

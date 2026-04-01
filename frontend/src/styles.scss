@@ -1,1 +1,35 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles — Backrooms: Lurking In The Shadows */
+
+/* Selection color */
+::selection {
+  background-color: rgba(212, 200, 122, 0.3);
+  color: #f0ecc4;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0900;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 200, 122, 0.25);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 200, 122, 0.45);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove outline on focus for mouse users, keep for keyboard */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+:focus-visible {
+  outline: 1px solid rgba(212, 200, 122, 0.6);
+  outline-offset: 2px;
+}

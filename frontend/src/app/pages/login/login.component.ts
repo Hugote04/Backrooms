@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { gsap } from 'gsap';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -8,90 +9,102 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   template: `
-    <div class="min-h-screen bg-black flex items-center justify-center px-4 py-16">
+    <div class="min-h-screen bg-[#050500] wallpaper-bg flex items-center justify-center px-4 py-16">
       <div class="w-full max-w-md">
 
-        <!-- Logo -->
-        <div class="text-center mb-10">
-          <a routerLink="/" class="inline-block mb-2">
-            <span class="text-2xl font-bold bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
-              BACKROOMS
-            </span>
-          </a>
-          <p class="text-orange-100/40 text-xs tracking-widest">LURKING IN THE SHADOWS</p>
-        </div>
+        <div #card>
+          <!-- Logo -->
+          <div class="text-center mb-10">
+            <a routerLink="/" class="inline-block mb-2">
+              <span class="text-2xl font-bold tracking-[0.2em] text-[#d4c87a] flicker-slow"
+                    style="font-family: 'Space Mono', monospace;">
+                BACKROOMS
+              </span>
+            </a>
+            <p class="text-[#5a5828] font-mono text-xs tracking-[0.3em] uppercase">Lurking In The Shadows</p>
+          </div>
 
-        <!-- Card -->
-        <div class="bg-orange-500/5 border border-orange-500/20 rounded-xl p-8">
-          <h1 class="text-2xl font-bold text-orange-100 mb-1">Iniciar Sesión</h1>
-          <p class="text-orange-100/50 text-sm mb-6">Accede a tu cuenta para dejar reseñas.</p>
+          <!-- Card -->
+          <div class="bg-[#0e0d04] border border-[#d4c87a]/20 p-8">
+            <h1 class="text-[#d4c87a] font-mono text-xl tracking-[0.2em] uppercase mb-1"
+                style="font-family: 'Space Mono', monospace;">
+              Iniciar Sesión
+            </h1>
+            <p class="text-[#5a5828] font-mono text-xs tracking-widest mb-8">
+              Accede a tu cuenta para dejar reseñas.
+            </p>
 
-          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
 
-            <div>
-              <label class="block text-orange-100/70 text-sm mb-1.5">Email</label>
-              <input
-                formControlName="email"
-                type="email"
-                placeholder="tu@email.com"
-                class="w-full bg-orange-500/10 border border-orange-500/20 rounded-md px-4 py-3
-                       text-orange-100 placeholder:text-orange-100/40
-                       focus:outline-none focus:border-orange-500/60 transition-all"
-              />
-              @if (form.controls.email.touched && form.controls.email.invalid) {
-                <p class="text-red-400/80 text-xs mt-1">Email inválido.</p>
+              <div>
+                <label class="block text-[#8b7a2e] font-mono text-xs tracking-widest uppercase mb-1.5">Email</label>
+                <input
+                  formControlName="email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  class="w-full bg-[#080700] border border-[#d4c87a]/20 px-4 py-3
+                         text-[#d4c87a] font-mono text-sm placeholder:text-[#3a3620]
+                         focus:outline-none focus:border-[#d4c87a]/60 transition-all"
+                />
+                @if (form.controls.email.touched && form.controls.email.invalid) {
+                  <p class="text-red-400/80 font-mono text-xs mt-1">Email inválido.</p>
+                }
+              </div>
+
+              <div>
+                <label class="block text-[#8b7a2e] font-mono text-xs tracking-widest uppercase mb-1.5">Contraseña</label>
+                <input
+                  formControlName="password"
+                  type="password"
+                  placeholder="••••••••"
+                  class="w-full bg-[#080700] border border-[#d4c87a]/20 px-4 py-3
+                         text-[#d4c87a] font-mono text-sm placeholder:text-[#3a3620]
+                         focus:outline-none focus:border-[#d4c87a]/60 transition-all"
+                />
+              </div>
+
+              @if (error()) {
+                <p class="text-red-400 font-mono text-xs py-2 px-3 border border-red-500/20 bg-red-500/10">
+                  {{ error() }}
+                </p>
               }
-            </div>
 
-            <div>
-              <label class="block text-orange-100/70 text-sm mb-1.5">Contraseña</label>
-              <input
-                formControlName="password"
-                type="password"
-                placeholder="••••••••"
-                class="w-full bg-orange-500/10 border border-orange-500/20 rounded-md px-4 py-3
-                       text-orange-100 placeholder:text-orange-100/40
-                       focus:outline-none focus:border-orange-500/60 transition-all"
-              />
-            </div>
+              <button
+                type="submit"
+                [disabled]="loading()"
+                class="w-full py-3 font-mono tracking-widest uppercase text-xs text-[#d4c87a]
+                       border border-[#d4c87a]/60 bg-[#d4c87a]/[0.08]
+                       hover:bg-[#d4c87a]/[0.18] hover:shadow-[0_0_16px_rgba(212,200,122,0.2)]
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-all duration-200"
+              >
+                {{ loading() ? 'Entrando...' : 'Iniciar Sesión' }}
+              </button>
 
-            @if (error()) {
-              <p class="text-red-400 text-sm py-2 px-3 rounded-md bg-red-500/10 border border-red-500/20">
-                {{ error() }}
-              </p>
-            }
+            </form>
 
-            <button
-              type="submit"
-              [disabled]="loading()"
-              class="w-full py-3 rounded-full font-semibold text-white
-                     bg-gradient-to-r from-orange-500 to-yellow-500
-                     hover:from-orange-600 hover:to-yellow-600
-                     disabled:opacity-50 disabled:cursor-not-allowed
-                     transition-all duration-300 hover:scale-[1.02]"
-            >
-              {{ loading() ? 'Entrando...' : 'Iniciar Sesión' }}
-            </button>
+            <p class="text-[#3a3620] font-mono text-xs mt-6 text-center tracking-widest">
+              ¿No tienes cuenta?
+              <a routerLink="/registro" class="text-[#8b7a2e] hover:text-[#d4c87a] ml-1 transition-colors">
+                Regístrate
+              </a>
+            </p>
+          </div>
 
-          </form>
-
-          <p class="text-orange-100/40 text-sm mt-6 text-center">
-            ¿No tienes cuenta?
-            <a routerLink="/registro" class="text-orange-400 hover:text-orange-300 ml-1">Regístrate</a>
+          <p class="text-center mt-6">
+            <a routerLink="/" class="text-[#3a3620] hover:text-[#8b7a2e] font-mono text-xs tracking-widest uppercase transition-colors">
+              ← Volver al inicio
+            </a>
           </p>
         </div>
-
-        <p class="text-center mt-6">
-          <a routerLink="/" class="text-orange-100/30 hover:text-orange-300 text-sm transition-colors">
-            ← Volver al inicio
-          </a>
-        </p>
 
       </div>
     </div>
   `,
 })
-export class LoginPageComponent {
+export class LoginPageComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('card') cardRef!: ElementRef;
+
   form = new FormGroup({
     email:    new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -100,7 +113,22 @@ export class LoginPageComponent {
   loading = signal(false);
   error   = signal('');
 
+  private ctx!: gsap.Context;
+
   constructor(private auth: AuthService, private router: Router) {}
+
+  ngAfterViewInit() {
+    this.ctx = gsap.context(() => {
+      gsap.from(this.cardRef.nativeElement, {
+        autoAlpha: 0,
+        y: 30,
+        duration: 0.8,
+        ease: 'power2.out',
+      });
+    });
+  }
+
+  ngOnDestroy() { this.ctx?.revert(); }
 
   async onSubmit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }

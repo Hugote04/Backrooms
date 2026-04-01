@@ -1,6 +1,5 @@
 import { Component, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { cn } from '../../lib/utils';
 
 export interface AccordionItem {
   question: string;
@@ -14,20 +13,21 @@ export interface AccordionItem {
   template: `
     <div [class]="containerClass">
       @for (item of items; track item.question; let i = $index) {
-        <div class="border-b border-orange-500/20 last:border-0">
+        <div class="border-b border-[#d4c87a]/15 last:border-0">
           <button
             type="button"
-            class="w-full flex items-center justify-between py-5 text-left text-orange-100 font-medium hover:text-orange-300 transition-colors duration-200"
+            class="w-full flex items-center justify-between py-4 text-left
+                   text-[#d4c87a] font-mono text-sm tracking-wider uppercase
+                   hover:text-[#f0ecc4] transition-colors duration-200"
             (click)="toggle(i)"
           >
             <span>{{ item.question }}</span>
-            <span
-              class="ml-4 shrink-0 text-orange-400 transition-transform duration-300"
-              [class.rotate-45]="isOpen(i)"
-            >+</span>
+            <span class="ml-4 shrink-0 text-[#8b7a2e] font-mono text-base transition-none">
+              {{ isOpen(i) ? '[-]' : '[+]' }}
+            </span>
           </button>
           @if (isOpen(i)) {
-            <div class="pb-5 text-orange-100/70 leading-relaxed animate-fade-in-up">
+            <div class="pb-4 text-[#8b7a2e] font-mono text-xs leading-relaxed animate-fade-in-up">
               {{ item.answer }}
             </div>
           }
@@ -44,7 +44,7 @@ export class AccordionComponent {
   private openIndexes = signal<Set<number>>(new Set());
 
   get containerClass() {
-    return cn('border border-orange-500/20 rounded-xl overflow-hidden px-6', this.class);
+    return `border border-[#d4c87a]/15 px-6 bg-[#0a0900] ${this.class}`;
   }
 
   isOpen(index: number): boolean {

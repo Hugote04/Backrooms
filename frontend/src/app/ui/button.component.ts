@@ -28,19 +28,19 @@ export class ButtonComponent {
 
   get computedClass() {
     return cn(
-      'inline-flex items-center justify-center font-semibold transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+      'inline-flex items-center justify-center font-mono tracking-widest uppercase transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
       {
-        'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-full hover:scale-105 shadow-lg shadow-orange-500/25':
+        'border border-[#d4c87a]/80 bg-[#d4c87a]/[0.08] text-[#d4c87a] hover:bg-[#d4c87a]/[0.18] hover:shadow-[0_0_16px_rgba(212,200,122,0.3)]':
           this.variant === 'cta',
-        'bg-orange-500/10 border border-orange-500/30 text-orange-100 hover:bg-orange-500/20 hover:border-orange-500/50 rounded-md':
+        'bg-[#d4c87a]/10 border border-[#d4c87a]/20 text-[#d4c87a] hover:bg-[#d4c87a]/20 hover:border-[#d4c87a]/40':
           this.variant === 'default',
-        'border border-orange-500/40 text-orange-300 hover:bg-orange-500/10 rounded-md':
+        'border border-[#8b7a2e]/60 text-[#8b7a2e] hover:border-[#d4c87a]/60 hover:text-[#d4c87a]':
           this.variant === 'outline',
-        'text-orange-300 hover:text-orange-200 hover:bg-orange-500/10 rounded-md':
+        'text-[#8b7a2e] hover:text-[#d4c87a] hover:bg-[#d4c87a]/[0.08]':
           this.variant === 'ghost',
-        'px-4 py-2 text-sm': this.size === 'sm',
-        'px-6 py-3 text-base': this.size === 'md',
-        'px-8 py-4 text-lg': this.size === 'lg',
+        'px-4 py-2 text-xs':  this.size === 'sm',
+        'px-6 py-3 text-xs':  this.size === 'md',
+        'px-8 py-4 text-sm':  this.size === 'lg',
       },
       this.class
     );

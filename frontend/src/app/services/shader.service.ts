@@ -8,90 +8,111 @@ const VERTEX_SHADER_SOURCE = `
 `;
 
 const FRAGMENT_SHADER_SOURCE = `
-  precision mediump float;
+precision mediump float;
 
-  uniform float u_time;
-  uniform vec2  u_resolution;
-  uniform vec2  u_mouse;
+uniform float u_time;
+uniform vec2  u_resolution;
+uniform vec2  u_mouse;
 
-  float rand(vec2 co) {
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
-  }
+float rand(vec2 co) {
+  return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
 
-  float noise(vec2 st) {
-    vec2 i = floor(st);
-    vec2 f = fract(st);
-    float a = rand(i);
-    float b = rand(i + vec2(1.0, 0.0));
-    float c = rand(i + vec2(0.0, 1.0));
-    float d = rand(i + vec2(1.0, 1.0));
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-  }
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(rand(i), rand(i + vec2(1,0)), u.x),
+    mix(rand(i + vec2(0,1)), rand(i + vec2(1,1)), u.x),
+    u.y
+  );
+}
 
-  float fbm(vec2 st) {
-    float value = 0.0;
-    float amplitude = 0.5;
-    vec2 shift = vec2(100.0);
-    mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
-    for (int i = 0; i < 6; i++) {
-      value += amplitude * noise(st);
-      st = rot * st * 2.1 + shift;
-      amplitude *= 0.5;
-    }
-    return value;
-  }
+float flickerVal(float t) {
+  float f = 1.0;
+  f *= 1.0 - 0.07 * step(0.95, fract(t * 1.3));
+  f *= 1.0 - 0.12 * step(0.92, fract(t * 0.7 + 0.4));
+  f *= 1.0 - 0.05 * step(0.98, fract(t * 2.1 + 0.2));
+  return clamp(f, 0.6, 1.0);
+}
 
-  void main() {
-    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
-    vec2 mouse = u_mouse / u_resolution.xy;
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+  vec2 mouse = u_mouse / u_resolution.xy;
 
-    float t = u_time * 0.12;
+  vec2 centered = uv - 0.5;
+  float aspect = u_resolution.x / u_resolution.y;
+  centered.x *= aspect;
 
-    // Mouse ripple influence
-    vec2 diff = uv - mouse;
-    float dist = length(diff);
-    vec2 mouseWarp = diff * smoothstep(0.45, 0.0, dist) * 0.18;
+  float distCenter = length(centered);
+  float depth = distCenter * 2.5;
+  float walkSpeed = u_time * 0.08;
+  float perspDepth = fract(depth - walkSpeed);
 
-    // Domain warping layers
-    vec2 q = vec2(
-      fbm(uv + t * 0.4),
-      fbm(uv + vec2(1.7, 9.2))
-    );
+  vec3 wallColor = mix(
+    vec3(0.06, 0.05, 0.01),
+    vec3(0.85, 0.79, 0.28),
+    1.0 - smoothstep(0.0, 0.6, distCenter)
+  );
 
-    vec2 r = vec2(
-      fbm(uv + 1.2 * q + vec2(1.7, 9.2) + 0.14 * t + mouseWarp),
-      fbm(uv + 1.2 * q + vec2(8.3, 2.8) + 0.12 * t + mouseWarp)
-    );
+  float wallNoise = noise(uv * 24.0 + vec2(u_time * 0.01, 0.0));
+  float carpetNoise = noise(uv * 80.0) * 0.4 + noise(uv * 40.0) * 0.3 + noise(uv * 20.0) * 0.3;
 
-    float f = fbm(uv + r);
+  float isFloor = smoothstep(0.35, 0.1, uv.y);
+  float isCeiling = smoothstep(0.65, 0.9, uv.y);
 
-    // Orange nebula palette
-    vec3 color = mix(
-      vec3(0.02, 0.01, 0.0),      // deep black
-      vec3(0.55, 0.18, 0.01),     // dark burnt orange
-      clamp(f * f * 4.5, 0.0, 1.0)
-    );
-    color = mix(
-      color,
-      vec3(0.88, 0.42, 0.04),     // vivid orange
-      clamp(length(q) * 0.9, 0.0, 1.0)
-    );
-    color = mix(
-      color,
-      vec3(1.0, 0.72, 0.18),      // warm yellow-orange
-      clamp(r.x * r.x * 0.9, 0.0, 1.0)
-    );
+  vec3 carpetColor = mix(
+    vec3(0.08, 0.07, 0.02),
+    vec3(0.42, 0.38, 0.12),
+    carpetNoise
+  );
+  float moistPatch = noise(uv * 12.0 + vec2(5.0)) * noise(uv * 8.0);
+  carpetColor = mix(carpetColor, vec3(0.28, 0.26, 0.08), moistPatch * 0.6);
 
-    // Keep it dark overall — this is a background
-    color = color * 0.65;
+  vec3 ceilingColor = mix(
+    vec3(0.65, 0.62, 0.22),
+    vec3(0.88, 0.84, 0.38),
+    wallNoise * 0.5 + 0.5
+  );
 
-    // Subtle vignette
-    float vig = 1.0 - smoothstep(0.4, 1.4, length(uv - vec2(0.5)));
-    color *= vig * 1.3;
+  vec3 surfaceColor = wallColor;
+  surfaceColor = mix(surfaceColor, carpetColor, isFloor * 0.9);
+  surfaceColor = mix(surfaceColor, ceilingColor, isCeiling * 0.8);
 
-    gl_FragColor = vec4(color, 1.0);
-  }
+  float stain = noise(uv * 6.0 + 3.7) * noise(uv * 14.0);
+  surfaceColor = mix(surfaceColor, surfaceColor * 0.6, stain * 0.4 * (1.0 - isFloor) * (1.0 - isCeiling));
+
+  float lightStripY = smoothstep(0.06, 0.0, abs(uv.y - 0.72));
+  float lightStripX = 1.0 - smoothstep(0.0, 0.35, abs(uv.x - 0.5));
+  float lightStrip = lightStripY * lightStripX;
+
+  float flicker = flickerVal(u_time * 1.5);
+
+  float lightHalo = exp(-distCenter * 2.8) * 0.7 + exp(-distCenter * 1.0) * 0.3;
+
+  vec3 lightColor = vec3(0.95, 0.92, 0.62) * flicker;
+  vec3 ambientLight = vec3(0.72, 0.68, 0.28) * lightHalo * flicker * 0.8;
+
+  vec3 finalColor = surfaceColor;
+  finalColor += ambientLight;
+  finalColor = mix(finalColor, lightColor, lightStrip * flicker * 1.2);
+
+  vec2 mouseDiff = uv - mouse;
+  float mouseDist = length(mouseDiff);
+  float mouseEffect = exp(-mouseDist * 4.0) * 0.08;
+  finalColor += vec3(0.6, 0.58, 0.22) * mouseEffect * flicker;
+
+  float vignette = 1.0 - smoothstep(0.3, 0.85, distCenter);
+  finalColor *= (vignette * 0.7 + 0.3);
+
+  float grain = (rand(uv + fract(u_time)) - 0.5) * 0.025;
+  finalColor += grain;
+
+  finalColor *= 0.88;
+
+  gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
+}
 `;
 
 @Injectable({ providedIn: 'root' })

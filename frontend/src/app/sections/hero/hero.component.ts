@@ -1,4 +1,5 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
+import { gsap } from 'gsap';
 import { ShaderService } from '../../services/shader.service';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { ButtonComponent } from '../../ui/button.component';
@@ -10,70 +11,65 @@ import { ButtonComponent } from '../../ui/button.component';
   template: `
     <canvas #shaderCanvas class="fixed inset-0 w-full h-full -z-10"></canvas>
 
+    <div class="fixed inset-0 -z-9 pointer-events-none texture-overlay scanlines opacity-40"></div>
+
     <div class="relative min-h-screen flex flex-col">
       <app-navbar />
 
       <main class="flex-1 flex items-center justify-center pt-16">
-        <div class="container mx-auto px-4 text-center">
+        <div class="container mx-auto px-6 text-center">
 
           <!-- Badge -->
-          <div
-            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full
-                   border border-orange-500/30 bg-orange-500/10 text-orange-300
-                   text-sm font-medium mb-8 opacity-0 animate-fade-in-down"
-            style="animation-delay: 0ms; animation-fill-mode: forwards;"
+          <div #badge
+            class="inline-flex items-center gap-2 px-4 py-1.5
+                   border border-[#d4c87a]/40 bg-[#d4c87a]/[0.08]
+                   text-[#b8a84a] text-xs font-mono tracking-[0.2em] uppercase mb-10"
           >
-            <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
-            Hecho con Unity • Disponible Ahora
+            <span class="w-1.5 h-1.5 bg-[#d4c87a] flicker inline-block"></span>
+            SISTEMA ACTIVO · NIVEL 0 DETECTADO
           </div>
 
           <!-- Título -->
-          <h1
-            class="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6
-                   opacity-0 animate-fade-in-down"
-            style="animation-delay: 200ms; animation-fill-mode: forwards;"
+          <h1 #titleLine1
+            class="block text-6xl md:text-8xl lg:text-9xl font-bold leading-none mb-2 tracking-tight"
+            style="font-family: 'Space Mono', monospace;"
           >
-            <span class="bg-gradient-to-r from-orange-300 via-yellow-400 to-amber-300 bg-clip-text text-transparent">
-              Entra En Las
-            </span>
-            <br />
-            <span class="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
-              Backrooms
-            </span>
+            <span class="text-[#e8e6b8] glow-pulse">ENTRA EN</span>
+          </h1>
+          <h1 #titleLine2
+            class="block text-6xl md:text-8xl lg:text-9xl font-bold leading-none mb-8 tracking-tight"
+            style="font-family: 'Space Mono', monospace;"
+          >
+            <span class="text-[#d4c87a] flicker">LAS BACKROOMS</span>
           </h1>
 
           <!-- Subtítulo -->
-          <p
-            class="text-lg md:text-xl lg:text-2xl font-light text-orange-100/70 max-w-2xl mx-auto mb-10
-                   opacity-0 animate-fade-in-up"
-            style="animation-delay: 400ms; animation-fill-mode: forwards;"
+          <p #subtitle
+            class="text-sm md:text-base font-mono text-[#8b7a2e] max-w-xl mx-auto mb-12 leading-relaxed tracking-wide"
           >
-            Acechando En Las Sombras. Explora espacios liminales infinitos,
-            sobrevive a lo desconocido y descubre los secretos que habitan en su interior.
+            &gt; ACECHANDO EN LAS SOMBRAS_<br/>
+            &gt; Explora corredores liminales infinitos.<br/>
+            &gt; Sobrevive. Descubre. No salgas.
           </p>
 
           <!-- Botones CTA -->
-          <div
-            class="flex flex-col sm:flex-row items-center justify-center gap-4
-                   opacity-0 animate-fade-in-up"
-            style="animation-delay: 600ms; animation-fill-mode: forwards;"
-          >
+          <div #ctaButtons class="flex flex-col sm:flex-row items-center justify-center gap-4">
             <app-button variant="cta" size="lg" class="w-full sm:w-auto">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
               </svg>
-              Descargar Ahora — Gratis
+              [ DESCARGAR — GRATIS ]
             </app-button>
 
             <app-button variant="outline" size="lg" class="w-full sm:w-auto">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              Ver Tráiler
+              [ VER TRÁILER ]
             </app-button>
           </div>
 
@@ -81,25 +77,57 @@ import { ButtonComponent } from '../../ui/button.component';
       </main>
 
       <!-- Scroll indicator -->
-      <div
-        class="flex justify-center pb-8 opacity-0 animate-fade-in-up"
-        style="animation-delay: 800ms; animation-fill-mode: forwards;"
-      >
-        <div class="flex flex-col items-center gap-1 text-orange-500/40 text-xs">
-          <span>Explorar</span>
-          <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
+      <div #scrollIndicator class="flex justify-center pb-10">
+        <div class="flex flex-col items-center gap-2 text-[#5a5828] text-xs font-mono tracking-widest">
+          <span>SCROLL PARA AVANZAR</span>
+          <div class="w-px h-8 bg-gradient-to-b from-[#d4c87a]/40 to-transparent"></div>
         </div>
       </div>
     </div>
   `,
 })
-export class HeroComponent implements OnInit, OnDestroy {
+export class HeroComponent implements AfterViewInit, OnDestroy {
   @ViewChild('shaderCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('badge')          badgeRef!:          ElementRef;
+  @ViewChild('titleLine1')     title1Ref!:         ElementRef;
+  @ViewChild('titleLine2')     title2Ref!:         ElementRef;
+  @ViewChild('subtitle')       subtitleRef!:       ElementRef;
+  @ViewChild('ctaButtons')     ctaRef!:            ElementRef;
+  @ViewChild('scrollIndicator') scrollRef!:        ElementRef;
+
+  private ctx!: gsap.Context;
 
   constructor(private shader: ShaderService) {}
 
-  ngOnInit()    { this.shader.init(this.canvasRef.nativeElement); }
-  ngOnDestroy() { this.shader.destroy(); }
+  ngAfterViewInit() {
+    this.shader.init(this.canvasRef.nativeElement);
+
+    this.ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+      tl.from(this.badgeRef.nativeElement, {
+        autoAlpha: 0, y: -20, duration: 0.6, delay: 0.3,
+      })
+      .from(this.title1Ref.nativeElement, {
+        autoAlpha: 0, y: 40, skewX: -3, duration: 0.9, ease: 'power3.out',
+      }, '-=0.2')
+      .from(this.title2Ref.nativeElement, {
+        autoAlpha: 0, y: 40, skewX: -3, duration: 0.9, ease: 'power3.out',
+      }, '-=0.7')
+      .from(this.subtitleRef.nativeElement, {
+        autoAlpha: 0, y: 20, duration: 0.7,
+      }, '-=0.4')
+      .from(this.ctaRef.nativeElement, {
+        autoAlpha: 0, y: 16, duration: 0.6,
+      }, '-=0.3')
+      .from(this.scrollRef.nativeElement, {
+        autoAlpha: 0, duration: 0.5,
+      }, '-=0.1');
+    });
+  }
+
+  ngOnDestroy() {
+    this.shader.destroy();
+    this.ctx?.revert();
+  }
 }

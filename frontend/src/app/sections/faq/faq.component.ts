@@ -1,4 +1,6 @@
-import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChildren, ViewChild, QueryList } from '@angular/core';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { AccordionComponent, AccordionItem } from '../../ui/accordion.component';
 
 @Component({
@@ -6,19 +8,18 @@ import { AccordionComponent, AccordionItem } from '../../ui/accordion.component'
   standalone: true,
   imports: [AccordionComponent],
   template: `
-    <section id="faq" class="py-24 bg-black">
+    <section id="faq" class="py-24 bg-[#080700]">
       <div class="container mx-auto px-4 max-w-3xl">
 
-        <div class="text-center mb-16 reveal" #revealEl>
-          <h2 class="text-4xl md:text-5xl font-bold mb-4">
-            <span class="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
-              Preguntas Frecuentes
-            </span>
+        <div #heading class="text-center mb-16">
+          <h2 class="text-4xl md:text-5xl font-bold mb-4"
+              style="font-family: 'Space Mono', monospace;">
+            <span class="text-[#d4c87a] tracking-widest uppercase">Preguntas Frecuentes</span>
           </h2>
-          <p class="text-orange-100/60 text-lg">Todo lo que necesitas saber antes de explorar.</p>
+          <p class="text-[#8b7a2e] font-mono text-xs tracking-widest">Todo lo que necesitas saber antes de explorar.</p>
         </div>
 
-        <div class="reveal" #revealEl>
+        <div #accordionWrapper>
           <app-accordion [items]="faqs" />
         </div>
 
@@ -27,7 +28,8 @@ import { AccordionComponent, AccordionItem } from '../../ui/accordion.component'
   `,
 })
 export class FaqComponent implements AfterViewInit, OnDestroy {
-  @ViewChildren('revealEl') revealEls!: QueryList<ElementRef>;
+  @ViewChild('heading')         headingRef!:   ElementRef;
+  @ViewChild('accordionWrapper') accordionRef!: ElementRef;
 
   faqs: AccordionItem[] = [
     {
@@ -56,15 +58,46 @@ export class FaqComponent implements AfterViewInit, OnDestroy {
     },
   ];
 
-  private observer!: IntersectionObserver;
+  private ctx!: gsap.Context;
 
   ngAfterViewInit() {
-    this.observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('revealed'); this.observer.unobserve(e.target); } }),
-      { threshold: 0.15 }
-    );
-    this.revealEls.forEach((el) => this.observer.observe(el.nativeElement));
+    this.ctx = gsap.context(() => {
+      gsap.from(this.headingRef.nativeElement, {
+        autoAlpha: 0,
+        y: 30,
+        duration: 0.8,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: this.headingRef.nativeElement,
+          start: 'top 80%',
+          once: true,
+        },
+      });
+
+      gsap.from(this.accordionRef.nativeElement, {
+        autoAlpha: 0,
+        y: 30,
+        duration: 0.8,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: this.accordionRef.nativeElement,
+          start: 'top 85%',
+          once: true,
+        },
+      });
+
+      gsap.to(this.headingRef.nativeElement, {
+        y: -40,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: 'section#faq',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1.5,
+        },
+      });
+    });
   }
 
-  ngOnDestroy() { this.observer?.disconnect(); }
+  ngOnDestroy() { this.ctx?.revert(); }
 }
