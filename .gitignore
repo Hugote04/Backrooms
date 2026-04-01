@@ -63,3 +63,5 @@ coverage/
 .mcp.json
 
 .claude/*
+gsap-skills-main
+gitignore
