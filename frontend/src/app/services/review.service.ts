@@ -1,38 +1,79 @@
 import { Injectable } from '@angular/core';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { SupabaseService } from './supabase.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Review {
   id: string;
-  user_id: string;
-  user_name: string;
+  userId: string;
+  userName: string;
   rating: number;
   text: string;
-  created_at: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ReviewStats {
+  total: number;
+  averageRating: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
-  private readonly sb: SupabaseClient;
+  private readonly base = `${environment.apiUrl}/reviews`;
 
-  constructor(supabaseService: SupabaseService) {
-    this.sb = supabaseService.client;
-  }
+  constructor(private http: HttpClient) {}
 
   async getAll(): Promise<Review[]> {
-    const { data, error } = await this.sb
-      .from('reviews')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error cargando reseñas:', error.message);
+    try {
+      const data = await firstValueFrom(this.http.get<Review[]>(this.base));
+      return data ?? [];
+    } catch (err) {
+      console.error('Error cargando reseñas:', err);
       return [];
     }
-    return (data as Review[]) ?? [];
   }
 
-  async add(userId: string, userName: string, rating: number, text: string) {
-    return this.sb.from('reviews').insert([{ user_id: userId, user_name: userName, rating, text }]);
+  async getStats(): Promise<ReviewStats> {
+    try {
+      return await firstValueFrom(this.http.get<ReviewStats>(`${this.base}/stats`));
+    } catch {
+      return { total: 0, averageRating: 0 };
+    }
+  }
+
+  async add(userId: string, userName: string, rating: number, text: string): Promise<{ error?: string }> {
+    try {
+      await firstValueFrom(
+        this.http.post<Review>(this.base, { userId, userName, rating, text })
+      );
+      return {};
+    } catch (err: any) {
+      return { error: err?.error?.error ?? 'Error al publicar la reseña' };
+    }
+  }
+
+  async update(id: string, userId: string, rating: number, text: string): Promise<{ error?: string }> {
+    try {
+      const headers = new HttpHeaders({ 'X-User-Id': userId });
+      await firstValueFrom(
+        this.http.put<Review>(`${this.base}/${id}`, { rating, text }, { headers })
+      );
+      return {};
+    } catch (err: any) {
+      return { error: err?.error?.error ?? 'Error al editar la reseña' };
+    }
+  }
+
+  async delete(id: string, userId: string): Promise<{ error?: string }> {
+    try {
+      const headers = new HttpHeaders({ 'X-User-Id': userId });
+      await firstValueFrom(
+        this.http.delete(`${this.base}/${id}`, { headers })
+      );
+      return {};
+    } catch (err: any) {
+      return { error: err?.error?.error ?? 'Error al eliminar la reseña' };
+    }
   }
 }

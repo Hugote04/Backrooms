@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@source "./**/*.ts";
+@source "./**/*.html";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -78,7 +81,6 @@ body {
   background-color: var(--br-void);
   color: var(--br-text-primary);
   font-family: 'Courier Prime', 'Courier New', monospace;
-  cursor: none;
 }
 
 h1, h2, h3, h4, .font-mono-heavy {
@@ -251,28 +253,6 @@ h1, h2, h3, h4, .font-mono-heavy {
   );
 }
 
-/* === CURSOR PERSONALIZADO === */
-* { cursor: none !important; }
-
-#custom-cursor {
-  position: fixed;
-  width: 20px;
-  height: 20px;
-  pointer-events: none;
-  z-index: 9999;
-  mix-blend-mode: difference;
-  transform: translate(-50%, -50%);
-}
-
-#custom-cursor::before {
-  content: '+';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--br-yellow-wall);
-  font-family: 'Space Mono', monospace;
-  font-size: 20px;
-  font-weight: bold;
-  line-height: 1;
-}
+/* === CURSOR === */
+* { cursor: crosshair; }
+a, button, [role="button"] { cursor: pointer; }

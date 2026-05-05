@@ -52,25 +52,17 @@ import { ButtonComponent } from '../../ui/button.component';
             &gt; Sobrevive. Descubre. No salgas.
           </p>
 
-          <!-- Botones CTA -->
-          <div #ctaButtons class="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <app-button variant="cta" size="lg" class="w-full sm:w-auto">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-              </svg>
-              [ DESCARGAR — GRATIS ]
-            </app-button>
-
-            <app-button variant="outline" size="lg" class="w-full sm:w-auto">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              [ VER TRÁILER ]
-            </app-button>
+          <!-- Botón CTA -->
+          <div #ctaButtons class="flex items-center justify-center">
+            <a href="#descarga">
+              <app-button variant="cta" size="lg">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                [ DESCARGAR — GRATIS ]
+              </app-button>
+            </a>
           </div>
 
         </div>
@@ -106,22 +98,22 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
 
       tl.from(this.badgeRef.nativeElement, {
-        autoAlpha: 0, y: -20, duration: 0.6, delay: 0.3,
+        autoAlpha: 0, y: -20, duration: 0.6, delay: 0.3, immediateRender: false,
       })
       .from(this.title1Ref.nativeElement, {
-        autoAlpha: 0, y: 40, skewX: -3, duration: 0.9, ease: 'power3.out',
+        autoAlpha: 0, y: 40, skewX: -3, duration: 0.9, ease: 'power3.out', immediateRender: false,
       }, '-=0.2')
       .from(this.title2Ref.nativeElement, {
-        autoAlpha: 0, y: 40, skewX: -3, duration: 0.9, ease: 'power3.out',
+        autoAlpha: 0, y: 40, skewX: -3, duration: 0.9, ease: 'power3.out', immediateRender: false,
       }, '-=0.7')
       .from(this.subtitleRef.nativeElement, {
-        autoAlpha: 0, y: 20, duration: 0.7,
+        autoAlpha: 0, y: 20, duration: 0.7, immediateRender: false,
       }, '-=0.4')
       .from(this.ctaRef.nativeElement, {
-        autoAlpha: 0, y: 16, duration: 0.6,
+        autoAlpha: 0, y: 16, duration: 0.6, immediateRender: false,
       }, '-=0.3')
       .from(this.scrollRef.nativeElement, {
-        autoAlpha: 0, duration: 0.5,
+        autoAlpha: 0, duration: 0.5, immediateRender: false,
       }, '-=0.1');
     });
   }

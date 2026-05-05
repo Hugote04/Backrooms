@@ -12,7 +12,6 @@ interface NavLink { label: string; anchor: string; }
   template: `
     <nav
       #navEl
-      class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
       [class]="navClass()"
     >
       <div class="container mx-auto px-4">
@@ -189,9 +188,10 @@ export class NavbarComponent implements AfterViewInit, OnDestroy {
   }
 
   navClass() {
+    const base = 'fixed top-0 left-0 right-0 z-50 transition-all duration-300';
     return this.scrolled()
-      ? 'bg-[#0e0d04]/90 backdrop-blur-sm border-b border-[#d4c87a]/30 shadow-[0_2px_20px_rgba(212,200,122,0.08)]'
-      : 'bg-[#0e0d04]/50 backdrop-blur-sm border-b border-[#d4c87a]/15';
+      ? `${base} bg-[#0e0d04]/90 backdrop-blur-sm border-b border-[#d4c87a]/30 shadow-[0_2px_20px_rgba(212,200,122,0.08)]`
+      : `${base} bg-[#0e0d04]/50 backdrop-blur-sm border-b border-[#d4c87a]/15`;
   }
 
   async signOut() {

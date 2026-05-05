@@ -79,44 +79,44 @@ export class FeaturesComponent implements AfterViewInit, OnDestroy {
   private ctx!: gsap.Context;
 
   ngAfterViewInit() {
-    this.ctx = gsap.context(() => {
-      gsap.from(this.headingRef.nativeElement, {
-        autoAlpha: 0,
-        y: 30,
-        duration: 0.8,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: this.headingRef.nativeElement,
-          start: 'top 80%',
-          once: true,
-        },
-      });
+    // Small delay to ensure DOM is rendered
+    setTimeout(() => {
+      this.ctx = gsap.context(() => {
+        // Heading fade in
+        gsap.from(this.headingRef.nativeElement, {
+          autoAlpha: 0,
+          y: 24,
+          duration: 0.8,
+          ease: 'power2.out',
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: this.headingRef.nativeElement,
+            start: 'top 85%',
+            once: true,
+          },
+        });
 
-      const cards = this.cardRefs.toArray().map(r => r.nativeElement);
-      gsap.from(cards, {
-        autoAlpha: 0,
-        y: 40,
-        stagger: 0.12,
-        duration: 0.7,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: cards[0],
-          start: 'top 85%',
-          once: true,
-        },
-      });
+        // Cards stagger — use immediateRender:false so they stay visible if trigger doesn't fire
+        const cards = this.cardRefs.toArray().map(r => r.nativeElement);
+        if (cards.length > 0) {
+          gsap.from(cards, {
+            autoAlpha: 0,
+            y: 32,
+            stagger: 0.1,
+            duration: 0.65,
+            ease: 'power2.out',
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: cards[0],
+              start: 'top 90%',
+              once: true,
+            },
+          });
+        }
 
-      gsap.to(this.headingRef.nativeElement, {
-        y: -40,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: 'section#features',
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 1.5,
-        },
+        ScrollTrigger.refresh();
       });
-    });
+    }, 100);
   }
 
   ngOnDestroy() { this.ctx?.revert(); }
