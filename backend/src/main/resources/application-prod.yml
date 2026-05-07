@@ -4,9 +4,9 @@ app:
 
 spring:
   datasource:
-    url: jdbc:postgresql://db.welxsoivrvfuaavjbeuh.supabase.co:5432/postgres?sslmode=require
+    url: jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
     driver-class-name: org.postgresql.Driver
-    username: postgres
+    username: postgres.welxsoivrvfuaavjbeuh
     password: 2025/2026Backrooms
 
   jpa:
