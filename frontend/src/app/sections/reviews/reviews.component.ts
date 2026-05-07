@@ -49,7 +49,7 @@ import { CommentService, Comment } from '../../services/comment.service';
 
             <textarea
               [(ngModel)]="reviewText"
-              placeholder="Cuéntanos tu experiencia... (mínimo 10 caracteres)"
+              placeholder="Cuéntanos tu experiencia..."
               rows="3"
               class="w-full bg-[#080700] border border-[#d4c87a]/20
                      text-[#d4c87a] font-mono text-sm placeholder:text-[#3a3620]
@@ -69,7 +69,7 @@ import { CommentService, Comment } from '../../services/comment.service';
 
             <button type="button"
               (click)="submitReview()"
-              [disabled]="submitting() || ratingValue() === 0 || reviewText.trim().length < 10"
+              [disabled]="submitting() || ratingValue() === 0 || reviewText.trim().length < 4"
               class="px-6 py-2.5 font-mono font-semibold text-xs tracking-widest uppercase text-[#d4c87a]
                      border border-[#d4c87a]/60 hover:bg-[#d4c87a]/10
                      hover:shadow-[0_0_16px_rgba(212,200,122,0.2)]
@@ -163,7 +163,7 @@ import { CommentService, Comment } from '../../services/comment.service';
                     <div class="flex gap-2">
                       <button type="button"
                         (click)="saveEdit(review.id)"
-                        [disabled]="saving() || editText.trim().length < 10 || editRating() === 0"
+                        [disabled]="saving() || editText.trim().length < 4 || editRating() === 0"
                         class="px-4 py-1.5 font-mono text-xs tracking-widest uppercase text-[#d4c87a]
                                border border-[#d4c87a]/60 hover:bg-[#d4c87a]/10
                                disabled:opacity-40 disabled:cursor-not-allowed transition-all"
@@ -347,7 +347,7 @@ export class ReviewsComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── crear reseña ──────────────────────────────────────────────
   async submitReview() {
     const user = this.auth.user();
-    if (!user || this.ratingValue() === 0 || this.reviewText.trim().length < 10) return;
+    if (!user || this.ratingValue() === 0 || this.reviewText.trim().length < 4) return;
 
     this.submitting.set(true);
     this.submitError.set('');
@@ -383,7 +383,7 @@ export class ReviewsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async saveEdit(id: string) {
     const user = this.auth.user();
-    if (!user || this.editText.trim().length < 10 || this.editRating() === 0) return;
+    if (!user || this.editText.trim().length < 4 || this.editRating() === 0) return;
 
     this.saving.set(true);
     this.editError.set('');

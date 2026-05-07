@@ -78,7 +78,7 @@ interface NavLink { label: string; anchor: string; }
             }
 
             <a
-              href="#descarga"
+              routerLink="/descarga"
               class="hidden sm:inline-flex items-center px-5 py-2 text-xs font-mono tracking-widest uppercase
                      border border-[#d4c87a]/60 text-[#d4c87a]
                      hover:bg-[#d4c87a]/10 hover:shadow-[0_0_16px_rgba(212,200,122,0.2)]
@@ -136,7 +136,7 @@ interface NavLink { label: string; anchor: string; }
                   </a>
                 }
                 <a
-                  href="#descarga"
+                  routerLink="/descarga"
                   class="inline-flex px-5 py-2 text-xs font-mono tracking-widest uppercase
                          border border-[#d4c87a]/60 text-[#d4c87a] w-fit"
                   (click)="menuOpen.set(false)"

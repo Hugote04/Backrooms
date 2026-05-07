@@ -13,7 +13,7 @@ public class ReviewRequest {
     private int rating;
 
     @NotBlank
-    @Size(min = 10, max = 2000)
+    @Size(min = 4, max = 2000)
     private String text;
 
     private String userId;

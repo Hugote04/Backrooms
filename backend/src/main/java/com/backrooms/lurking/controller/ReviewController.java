@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,14 @@ public class ReviewController {
     }
 
     @PostMapping
-    public ResponseEntity<Review> create(@Valid @RequestBody ReviewRequest req) {
+    public ResponseEntity<Review> create(
+            @Valid @RequestBody ReviewRequest req,
+            @RequestAttribute(name = "userId", required = false) String jwtUserId,
+            @RequestHeader(value = "X-User-Id", defaultValue = "") String headerUserId) {
+
+        // Prioridad: JWT validado > header
+        String resolvedId = (jwtUserId != null && !jwtUserId.isBlank()) ? jwtUserId : headerUserId;
+        req.setUserId(resolvedId);
         return ResponseEntity.ok(reviewService.create(req));
     }
 
@@ -36,15 +44,21 @@ public class ReviewController {
     public ResponseEntity<Review> update(
             @PathVariable String id,
             @Valid @RequestBody ReviewRequest req,
-            @RequestHeader(value = "X-User-Id", defaultValue = "anonymous") String userId) {
-        return ResponseEntity.ok(reviewService.update(id, req, userId));
+            @RequestAttribute(name = "userId", required = false) String jwtUserId,
+            @RequestHeader(value = "X-User-Id", defaultValue = "") String headerUserId) {
+
+        String resolvedId = (jwtUserId != null && !jwtUserId.isBlank()) ? jwtUserId : headerUserId;
+        return ResponseEntity.ok(reviewService.update(id, req, resolvedId));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> delete(
             @PathVariable String id,
-            @RequestHeader(value = "X-User-Id", defaultValue = "anonymous") String userId) {
-        reviewService.delete(id, userId);
+            @RequestAttribute(name = "userId", required = false) String jwtUserId,
+            @RequestHeader(value = "X-User-Id", defaultValue = "") String headerUserId) {
+
+        String resolvedId = (jwtUserId != null && !jwtUserId.isBlank()) ? jwtUserId : headerUserId;
+        reviewService.delete(id, resolvedId);
         return ResponseEntity.ok(Map.of("message", "Reseña eliminada"));
     }
 

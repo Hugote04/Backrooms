@@ -47,8 +47,11 @@ import { AuthService } from '../../services/auth.service';
             } @else {
               <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
 
+                <!-- Nombre -->
                 <div>
-                  <label class="block text-[#8b7a2e] font-mono text-xs tracking-widest uppercase mb-1.5">Nombre (opcional)</label>
+                  <label class="block text-[#8b7a2e] font-mono text-xs tracking-widest uppercase mb-1.5">
+                    Nombre (opcional)
+                  </label>
                   <input
                     formControlName="nombre"
                     type="text"
@@ -59,6 +62,7 @@ import { AuthService } from '../../services/auth.service';
                   />
                 </div>
 
+                <!-- Email -->
                 <div>
                   <label class="block text-[#8b7a2e] font-mono text-xs tracking-widest uppercase mb-1.5">Email</label>
                   <input
@@ -74,8 +78,11 @@ import { AuthService } from '../../services/auth.service';
                   }
                 </div>
 
+                <!-- Contraseña -->
                 <div>
-                  <label class="block text-[#8b7a2e] font-mono text-xs tracking-widest uppercase mb-1.5">Contraseña</label>
+                  <label class="block text-[#8b7a2e] font-mono text-xs tracking-widest uppercase mb-1.5">
+                    Contraseña
+                  </label>
                   <input
                     formControlName="password"
                     type="password"
@@ -89,12 +96,55 @@ import { AuthService } from '../../services/auth.service';
                   }
                 </div>
 
+                <!-- ── Aceptar términos ──────────────────────────── -->
+                <div class="pt-2">
+                  <label class="flex items-start gap-3 cursor-pointer group">
+                    <div class="relative mt-0.5 shrink-0">
+                      <input
+                        formControlName="terminos"
+                        type="checkbox"
+                        class="sr-only peer"
+                      />
+                      <!-- Checkbox visual personalizado -->
+                      <div class="w-4 h-4 border border-[#d4c87a]/30 bg-[#080700]
+                                  peer-checked:bg-[#d4c87a]/20 peer-checked:border-[#d4c87a]/70
+                                  group-hover:border-[#d4c87a]/50 transition-all duration-150
+                                  flex items-center justify-center">
+                        @if (form.controls.terminos.value) {
+                          <span class="text-[#d4c87a] text-xs leading-none select-none">✓</span>
+                        }
+                      </div>
+                    </div>
+                    <span class="text-[#5a5828] font-mono text-xs leading-relaxed">
+                      He leído y acepto los
+                      <a routerLink="/terminos" target="_blank"
+                         class="text-[#8b7a2e] hover:text-[#d4c87a] underline underline-offset-2 transition-colors"
+                         (click)="$event.stopPropagation()">
+                        Términos de Servicio
+                      </a>
+                      y la
+                      <a routerLink="/privacidad" target="_blank"
+                         class="text-[#8b7a2e] hover:text-[#d4c87a] underline underline-offset-2 transition-colors"
+                         (click)="$event.stopPropagation()">
+                        Política de Privacidad
+                      </a>
+                    </span>
+                  </label>
+                  @if (form.controls.terminos.touched && form.controls.terminos.invalid) {
+                    <p class="text-red-400/80 font-mono text-xs mt-2 ml-7">
+                      Debes aceptar los términos para continuar.
+                    </p>
+                  }
+                </div>
+
+                <!-- Error general -->
                 @if (error()) {
                   <p class="text-red-400 font-mono text-xs py-2 px-3 border border-red-500/20 bg-red-500/10">
                     {{ error() }}
                   </p>
                 }
 
+                <!-- Submit -->
                 <button
                   type="submit"
                   [disabled]="loading()"
@@ -133,9 +183,10 @@ export class RegistroPageComponent implements AfterViewInit, OnDestroy {
   @ViewChild('card') cardRef!: ElementRef;
 
   form = new FormGroup({
-    nombre:   new FormControl('', { nonNullable: true }),
-    email:    new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
-    password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(6)] }),
+    nombre:    new FormControl('',    { nonNullable: true }),
+    email:     new FormControl('',    { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    password:  new FormControl('',    { nonNullable: true, validators: [Validators.required, Validators.minLength(6)] }),
+    terminos:  new FormControl(false, { nonNullable: true, validators: [Validators.requiredTrue] }),
   });
 
   loading = signal(false);
@@ -149,10 +200,7 @@ export class RegistroPageComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.ctx = gsap.context(() => {
       gsap.from(this.cardRef.nativeElement, {
-        autoAlpha: 0,
-        y: 30,
-        duration: 0.8,
-        ease: 'power2.out',
+        autoAlpha: 0, y: 30, duration: 0.8, ease: 'power2.out',
       });
     });
   }
@@ -177,7 +225,7 @@ export class RegistroPageComponent implements AfterViewInit, OnDestroy {
 
   private translateError(msg: string): string {
     if (msg.includes('already registered')) return 'Este email ya está registrado.';
-    if (msg.includes('Password should be')) return 'La contraseña debe tener al menos 6 caracteres.';
+    if (msg.includes('Password should be'))  return 'La contraseña debe tener al menos 6 caracteres.';
     return 'Error al crear la cuenta. Inténtalo de nuevo.';
   }
 }

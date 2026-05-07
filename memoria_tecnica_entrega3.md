@@ -1,8 +1,8 @@
 # Memoria Técnica — Entrega 3
 ## Backrooms: Lurking In The Shadows — Aplicación Web
 
-**Proyecto:** Desarrollo de Aplicaciones Web (DAW) — 2024/2025  
-**Centro:** I.E.S. Rey Fernando VI  
+**Proyecto:** Desarrollo de Aplicaciones Web (DAW) — 2025/2026  
+**Centro:** IES Isidra de Guzmán  
 **Fecha:** Abril 2026
 
 ---

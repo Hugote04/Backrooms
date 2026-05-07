@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 
@@ -23,15 +24,24 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<Comment> create(@Valid @RequestBody CommentRequest req) {
+    public ResponseEntity<Comment> create(
+            @Valid @RequestBody CommentRequest req,
+            @RequestAttribute(name = "userId", required = false) String jwtUserId,
+            @RequestHeader(value = "X-User-Id", defaultValue = "") String headerUserId) {
+
+        String resolvedId = (jwtUserId != null && !jwtUserId.isBlank()) ? jwtUserId : headerUserId;
+        req.setUserId(resolvedId);
         return ResponseEntity.ok(commentService.create(req));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> delete(
             @PathVariable String id,
-            @RequestHeader(value = "X-User-Id", defaultValue = "anonymous") String userId) {
-        commentService.delete(id, userId);
+            @RequestAttribute(name = "userId", required = false) String jwtUserId,
+            @RequestHeader(value = "X-User-Id", defaultValue = "") String headerUserId) {
+
+        String resolvedId = (jwtUserId != null && !jwtUserId.isBlank()) ? jwtUserId : headerUserId;
+        commentService.delete(id, resolvedId);
         return ResponseEntity.ok(Map.of("message", "Comentario eliminado"));
     }
 }

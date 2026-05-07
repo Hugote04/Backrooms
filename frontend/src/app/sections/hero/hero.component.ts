@@ -1,4 +1,5 @@
 import { Component, ElementRef, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { gsap } from 'gsap';
 import { ShaderService } from '../../services/shader.service';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
@@ -7,7 +8,7 @@ import { ButtonComponent } from '../../ui/button.component';
 @Component({
   selector: 'app-hero',
   standalone: true,
-  imports: [NavbarComponent, ButtonComponent],
+  imports: [NavbarComponent, ButtonComponent, RouterLink],
   template: `
     <canvas #shaderCanvas class="fixed inset-0 w-full h-full -z-10"></canvas>
 
@@ -54,7 +55,7 @@ import { ButtonComponent } from '../../ui/button.component';
 
           <!-- Botón CTA -->
           <div #ctaButtons class="flex items-center justify-center">
-            <a href="#descarga">
+            <a routerLink="/descarga">
               <app-button variant="cta" size="lg">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { SupabaseService } from './supabase.service';
 
 export interface Review {
   id: string;
@@ -22,7 +23,13 @@ export interface ReviewStats {
 export class ReviewService {
   private readonly base = `${environment.apiUrl}/reviews`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private supabase: SupabaseService) {}
+
+  private async authHeaders(): Promise<HttpHeaders> {
+    const { data } = await this.supabase.client.auth.getSession();
+    const token = data.session?.access_token;
+    return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+  }
 
   async getAll(): Promise<Review[]> {
     try {
@@ -44,8 +51,9 @@ export class ReviewService {
 
   async add(userId: string, userName: string, rating: number, text: string): Promise<{ error?: string }> {
     try {
+      const headers = await this.authHeaders();
       await firstValueFrom(
-        this.http.post<Review>(this.base, { userId, userName, rating, text })
+        this.http.post<Review>(this.base, { userId, userName, rating, text }, { headers })
       );
       return {};
     } catch (err: any) {
@@ -55,7 +63,7 @@ export class ReviewService {
 
   async update(id: string, userId: string, rating: number, text: string): Promise<{ error?: string }> {
     try {
-      const headers = new HttpHeaders({ 'X-User-Id': userId });
+      const headers = (await this.authHeaders()).set('X-User-Id', userId);
       await firstValueFrom(
         this.http.put<Review>(`${this.base}/${id}`, { rating, text }, { headers })
       );
@@ -67,7 +75,7 @@ export class ReviewService {
 
   async delete(id: string, userId: string): Promise<{ error?: string }> {
     try {
-      const headers = new HttpHeaders({ 'X-User-Id': userId });
+      const headers = (await this.authHeaders()).set('X-User-Id', userId);
       await firstValueFrom(
         this.http.delete(`${this.base}/${id}`, { headers })
       );

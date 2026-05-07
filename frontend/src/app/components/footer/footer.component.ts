@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
-interface FooterLink  { label: string; href: string; }
+interface FooterLink   { label: string; href: string; router?: boolean; }
 interface FooterColumn { title: string; links: FooterLink[]; }
 
 @Component({
   selector: 'app-footer',
   standalone: true,
+  imports: [RouterLink],
   template: `
     <footer class="border-t border-[#d4c87a]/10 bg-[#050500] py-16">
       <div class="container mx-auto px-4">
@@ -23,24 +25,18 @@ interface FooterColumn { title: string; links: FooterLink[]; }
               La experiencia definitiva de horror liminal. Explora las habitaciones infinitas,
               sobrevive a lo desconocido.
             </p>
-            <!-- Emojis decorativos -->
             <p class="text-lg mb-5 tracking-wider select-none" title="Terror · Misterio · Supervivencia">
               👁️&nbsp;🌀&nbsp;🚪
             </p>
-            <!-- Social links -->
+            <!-- Solo X/Twitter — sin Discord ni YouTube -->
             <div class="flex gap-3">
-              @for (social of socials; track social.label) {
-                <a
-                  [href]="social.href"
-                  [attr.aria-label]="social.label"
-                  target="_blank" rel="noopener"
-                  class="w-9 h-9 border border-[#d4c87a]/15 text-[#5a5828]
-                         hover:border-[#d4c87a]/40 hover:text-[#d4c87a]
-                         flex items-center justify-center text-base
-                         transition-all duration-200"
-                  [title]="social.label"
-                >{{ social.emoji }}</a>
-              }
+              <a href="#" aria-label="X / Twitter" target="_blank" rel="noopener"
+                 title="X / Twitter"
+                 class="w-9 h-9 border border-[#d4c87a]/15 text-[#5a5828]
+                        hover:border-[#d4c87a]/40 hover:text-[#d4c87a]
+                        flex items-center justify-center text-base transition-all duration-200">
+                𝕏
+              </a>
             </div>
           </div>
 
@@ -50,10 +46,17 @@ interface FooterColumn { title: string; links: FooterLink[]; }
               <ul class="space-y-2.5">
                 @for (link of col.links; track link.label) {
                   <li>
-                    <a [href]="link.href"
-                       class="text-[#5a5828] hover:text-[#d4c87a] font-mono text-xs transition-colors duration-200">
-                      {{ link.label }}
-                    </a>
+                    @if (link.router) {
+                      <a [routerLink]="link.href"
+                         class="text-[#5a5828] hover:text-[#d4c87a] font-mono text-xs transition-colors duration-200">
+                        {{ link.label }}
+                      </a>
+                    } @else {
+                      <a [href]="link.href"
+                         class="text-[#5a5828] hover:text-[#d4c87a] font-mono text-xs transition-colors duration-200">
+                        {{ link.label }}
+                      </a>
+                    }
                   </li>
                 }
               </ul>
@@ -77,38 +80,29 @@ interface FooterColumn { title: string; links: FooterLink[]; }
 export class FooterComponent {
   year = new Date().getFullYear();
 
-  socials = [
-    { label: 'Discord',    href: '#', emoji: '💬' },
-    { label: 'X/Twitter',  href: '#', emoji: '𝕏'  },
-    { label: 'YouTube',    href: '#', emoji: '▶'  },
-  ];
-
   columns: FooterColumn[] = [
     {
       title: 'Enlaces Rápidos',
       links: [
-        { label: 'Características', href: '#features' },
-        { label: 'Descargar',       href: '#descarga'  },
+        { label: 'Características', href: '#features'  },
+        { label: 'Descargar',       href: '/descarga', router: true },
         { label: 'Reseñas',         href: '#resenas'   },
-        { label: 'Changelog',       href: '#'          },
       ],
     },
     {
       title: 'Soporte',
       links: [
-        { label: 'FAQ',                  href: '#faq'     },
-        { label: 'Contacto',             href: '#contact' },
-        { label: 'Reportar un bug',      href: '#'        },
-        { label: 'Wiki de la comunidad', href: '#'        },
+        { label: 'FAQ',      href: '#faq'     },
+        { label: 'Contacto', href: '#contact' },
       ],
     },
     {
       title: 'Legal',
       links: [
-        { label: 'Política de Privacidad', href: '#' },
-        { label: 'Términos de Servicio',   href: '#' },
-        { label: 'Política de Cookies',    href: '#' },
-        { label: 'EULA',                   href: '#' },
+        { label: 'Política de Privacidad', href: '/privacidad', router: true },
+        { label: 'Términos de Servicio',   href: '/terminos',   router: true },
+        { label: 'Política de Cookies',    href: '/cookies',    router: true },
+        { label: 'EULA',                   href: '/eula',       router: true },
       ],
     },
   ];
