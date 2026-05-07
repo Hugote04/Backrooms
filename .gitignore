@@ -43,7 +43,6 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
-application-prod.yml
 *.key
 *.pem
 

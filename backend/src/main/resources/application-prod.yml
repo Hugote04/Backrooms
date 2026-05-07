@@ -1,0 +1,25 @@
+app:
+  jwt:
+    secret: Pk3p5vksoARLcDHuziLk5Zqi1cgDaRG+cCp684Pm3zZjzvJhWHC6AarykNHYyEWTgm1itvjbblxANRumXIEQiQ==
+
+spring:
+  datasource:
+    url: jdbc:postgresql://db.welxsoivrvfuaavjbeuh.supabase.co:5432/postgres?sslmode=require
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 2025/2026Backrooms
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        default_schema: public
+        jdbc:
+          time_zone: UTC
+
+  sql:
+    init:
+      mode: never
