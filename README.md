@@ -14,9 +14,7 @@ Aplicación web complementaria para el videojuego de terror **Lurking In The Sha
 - Registro e inicio de sesión de usuarios
 - Sistema de reseñas con puntuación
 - Comentarios con respuestas
-- Página de descarga del juego (sin login)
-- Lore y artículos sobre el juego
-- Chatbot IA temático
+- Página de descarga del juego (sin login
 
 ## Requisitos
 
