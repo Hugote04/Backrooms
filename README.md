@@ -7,7 +7,6 @@ Aplicación web complementaria para el videojuego de terror **Lurking In The Sha
 - **Frontend:** Angular 21 (SCSS)
 - **Backend:** Spring Boot 3.5 (Java 21)
 - **Base de datos:** Supabase (PostgreSQL)
-- **IA:** Google AI (Gemini)
 
 ## Funcionalidades
 
@@ -15,8 +14,6 @@ Aplicación web complementaria para el videojuego de terror **Lurking In The Sha
 - Sistema de reseñas con puntuación
 - Comentarios con respuestas
 - Página de descarga del juego (sin login)
-- Lore y artículos sobre el juego
-- Chatbot IA temático
 
 ## Requisitos
 
