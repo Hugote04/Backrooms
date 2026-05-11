@@ -9,16 +9,8 @@ import java.util.List;
 
 public interface ScoreRepository extends JpaRepository<Score, String> {
 
-    /** Leaderboard global: mejor tiempo por usuario (mínimo), ordenado ASC */
-    @Query("""
-        SELECT s FROM Score s
-        WHERE s.tiempoSegundos = (
-            SELECT MIN(s2.tiempoSegundos) FROM Score s2
-            WHERE s2.userId = s.userId AND s2.nivel = s.nivel
-        )
-        ORDER BY s.tiempoSegundos ASC
-    """)
-    List<Score> findLeaderboard();
+    /** Leaderboard global: todas las partidas ordenadas por tiempo ASC */
+    List<Score> findAllByOrderByTiempoSegundosAsc();
 
     /** Todos los scores de un usuario, ordenados por fecha DESC */
     List<Score> findByUserIdOrderByCreatedAtDesc(String userId);

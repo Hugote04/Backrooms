@@ -27,7 +27,7 @@ public class ScoreService {
     }
 
     public List<Score> getLeaderboard() {
-        return scoreRepository.findLeaderboard();
+        return scoreRepository.findAllByOrderByTiempoSegundosAsc();
     }
 
     public List<Score> getByUser(String userId) {

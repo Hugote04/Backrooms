@@ -52,6 +52,39 @@ export class ScoreService {
     }
   }
 
+  /** Obtener URL de avatar de un usuario */
+  async getAvatarUrl(userId: string): Promise<string | null> {
+    try {
+      const profile = await firstValueFrom(
+        this.http.get<{ avatarUrl: string | null }>(`${environment.apiUrl}/profiles/${userId}`)
+      );
+      return profile?.avatarUrl ?? null;
+    } catch { return null; }
+  }
+
+  /** Subir avatar a Supabase Storage y guardar URL en backend */
+  async uploadAvatar(userId: string, file: File): Promise<{ url?: string; error?: string }> {
+    try {
+      const ext  = file.name.split('.').pop();
+      const path = `${userId}/avatar.${ext}`;
+      const { error: uploadError } = await this.supabase.client.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true });
+      if (uploadError) return { error: uploadError.message };
+
+      const { data } = this.supabase.client.storage.from('avatars').getPublicUrl(path);
+      const avatarUrl = data.publicUrl;
+
+      const headers = await this.authHeaders();
+      await firstValueFrom(
+        this.http.put(`${environment.apiUrl}/profiles/me`, { avatarUrl }, { headers })
+      );
+      return { url: avatarUrl };
+    } catch (err: any) {
+      return { error: err?.message ?? 'Error al subir el avatar' };
+    }
+  }
+
   /** Enviar puntuación desde Unity (o para pruebas) */
   async submit(userName: string, nivel: string, tiempoSegundos: number, puzlesResueltos: number): Promise<{ error?: string }> {
     try {
