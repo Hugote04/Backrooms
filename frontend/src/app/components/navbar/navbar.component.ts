@@ -56,9 +56,17 @@ interface NavLink { label: string; anchor: string; }
                   routerLink="/perfil"
                   class="flex items-center gap-2 text-[#b8a84a] hover:text-[#d4c87a] transition-colors"
                 >
-                  <div class="w-6 h-6 bg-[#d4c87a]/15 border border-[#d4c87a]/40
-                               flex items-center justify-center text-[#d4c87a] text-xs font-mono font-bold">
-                    {{ initial() }}
+                  <div class="w-6 h-6 border border-[#d4c87a]/40 overflow-hidden shrink-0
+                               flex items-center justify-center">
+                    @if (avatarUrl()) {
+                      <img [src]="avatarUrl()!" alt="avatar"
+                           class="w-full h-full object-cover" />
+                    } @else {
+                      <span class="bg-[#d4c87a]/15 w-full h-full flex items-center justify-center
+                                   text-[#d4c87a] text-xs font-mono font-bold">
+                        {{ initial() }}
+                      </span>
+                    }
                   </div>
                   <span class="text-xs font-mono hidden lg:block">{{ auth.getDisplayName() }}</span>
                 </a>
@@ -171,6 +179,10 @@ export class NavbarComponent implements AfterViewInit, OnDestroy {
   initial = computed(() => {
     const name = this.auth.getDisplayName();
     return name.charAt(0).toUpperCase();
+  });
+
+  avatarUrl = computed(() => {
+    return (this.auth.user()?.user_metadata?.['avatarUrl'] as string) ?? null;
   });
 
   links: NavLink[] = [

@@ -21,4 +21,10 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
     @Transactional
     @Query("UPDATE Review r SET r.userName = :userName WHERE r.userId = :userId")
     void updateUserNameByUserId(@Param("userId") String userId, @Param("userName") String userName);
+
+    /** Asigna userId a reseñas huérfanas (userId vacío) que coincidan por nombre */
+    @Modifying
+    @Transactional
+    @Query("UPDATE Review r SET r.userId = :userId WHERE (r.userId = '' OR r.userId = 'anonymous') AND r.userName = :userName")
+    void claimOrphansByUserName(@Param("userId") String userId, @Param("userName") String userName);
 }

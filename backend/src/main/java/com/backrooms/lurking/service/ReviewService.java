@@ -65,10 +65,16 @@ public class ReviewService {
     }
 
     @Transactional
-    public void updateUserName(String userId, String userName) {
-        reviewRepository.updateUserNameByUserId(userId, userName);
-        commentRepository.updateUserNameByUserId(userId, userName);
-        scoreRepository.updateUserNameByUserId(userId, userName);
+    public void updateUserName(String userId, String oldName, String newName) {
+        // 1. Reclamar reseñas/comentarios huérfanos (userId vacío) por nombre anterior
+        if (oldName != null && !oldName.isBlank()) {
+            reviewRepository.claimOrphansByUserName(userId, oldName);
+            commentRepository.claimOrphansByUserName(userId, oldName);
+        }
+        // 2. Actualizar nombre en todo lo que ya tiene el userId correcto
+        reviewRepository.updateUserNameByUserId(userId, newName);
+        commentRepository.updateUserNameByUserId(userId, newName);
+        scoreRepository.updateUserNameByUserId(userId, newName);
     }
 
     public Double getAverageRating() {

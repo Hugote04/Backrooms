@@ -75,11 +75,11 @@ export class ReviewService {
   }
 
   /** Sincroniza el userName en todas las reseñas y comentarios del usuario */
-  async syncUserName(userId: string, userName: string): Promise<void> {
+  async syncUserName(userId: string, oldName: string, newName: string): Promise<void> {
     try {
       const headers = (await this.authHeaders()).set('X-User-Id', userId);
       await firstValueFrom(
-        this.http.patch(`${this.base}/username`, { userName }, { headers })
+        this.http.patch(`${this.base}/username`, { oldName, userName: newName }, { headers })
       );
     } catch { /* silencioso — no crítico */ }
   }

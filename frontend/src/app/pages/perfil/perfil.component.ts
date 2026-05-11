@@ -345,13 +345,15 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
     let hasError = false;
 
     if (this.editName.trim() && this.editName.trim() !== this.displayName) {
-      const { error } = await this.auth.updateName(this.editName.trim());
+      const oldName = this.displayName;
+      const newName = this.editName.trim();
+      const { error } = await this.auth.updateName(newName);
       if (error) { this.editError = error.message; hasError = true; }
       else {
-        this.displayName = this.editName.trim();
-        this.initial     = this.displayName.charAt(0).toUpperCase();
-        // sync nombre en reseñas, comentarios y scores
-        await this.reviewService.syncUserName(this.userId, this.displayName);
+        this.displayName = newName;
+        this.initial     = newName.charAt(0).toUpperCase();
+        // sync nombre en reseñas, comentarios y scores (incluye reclamar huérfanas)
+        await this.reviewService.syncUserName(this.userId, oldName, newName);
       }
     }
 

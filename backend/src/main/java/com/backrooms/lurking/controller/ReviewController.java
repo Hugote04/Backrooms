@@ -76,9 +76,10 @@ public class ReviewController {
         if (resolvedId.isBlank()) return ResponseEntity.status(401).build();
 
         String userName = body.get("userName");
+        String oldName  = body.get("oldName");
         if (userName == null || userName.isBlank()) return ResponseEntity.badRequest().build();
 
-        reviewService.updateUserName(resolvedId, userName.trim());
+        reviewService.updateUserName(resolvedId, oldName, userName.trim());
         return ResponseEntity.ok(Map.of("message", "Nombre actualizado"));
     }
 

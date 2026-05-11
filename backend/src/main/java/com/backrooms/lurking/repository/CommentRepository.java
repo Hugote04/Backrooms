@@ -18,4 +18,9 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
     @Transactional
     @Query("UPDATE Comment c SET c.userName = :userName WHERE c.userId = :userId")
     void updateUserNameByUserId(@Param("userId") String userId, @Param("userName") String userName);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Comment c SET c.userId = :userId WHERE (c.userId = '' OR c.userId = 'anonymous') AND c.userName = :userName")
+    void claimOrphansByUserName(@Param("userId") String userId, @Param("userName") String userName);
 }
