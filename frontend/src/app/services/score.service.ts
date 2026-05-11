@@ -59,39 +59,35 @@ export class ScoreService {
     } catch { return null; }
   }
 
-  /** Obtener URL de avatar de un usuario */
-  async getAvatarUrl(userId: string): Promise<string | null> {
+  /** Obtener URL de avatar — lee de los metadatos de Supabase Auth */
+  async getAvatarUrl(_userId: string): Promise<string | null> {
     try {
-      const profile = await firstValueFrom(
-        this.http.get<{ avatarUrl: string | null }>(`${environment.apiUrl}/profiles/${userId}`)
-      );
-      return profile?.avatarUrl ?? null;
+      const { data } = await this.supabase.client.auth.getUser();
+      return (data.user?.user_metadata?.['avatarUrl'] as string) ?? null;
     } catch { return null; }
   }
 
-  /** Subir avatar a Supabase Storage y guardar URL en backend */
+  /** Subir avatar a Supabase Storage y guardar URL en user_metadata */
   async uploadAvatar(userId: string, file: File): Promise<{ url?: string; error?: string }> {
     try {
       const ext  = file.name.split('.').pop() ?? 'jpg';
       const path = `${userId}/avatar.${ext}`;
+
       const { error: uploadError } = await this.supabase.client.storage
         .from('avatars')
         .upload(path, file, { upsert: true, contentType: file.type });
 
-      if (uploadError) {
-        if (uploadError.message.includes('Bucket not found') || uploadError.message.includes('404')) {
-          return { error: 'Bucket "avatars" no existe en Supabase Storage. Créalo como público en el dashboard.' };
-        }
-        return { error: uploadError.message };
-      }
+      if (uploadError) return { error: uploadError.message };
 
       const { data } = this.supabase.client.storage.from('avatars').getPublicUrl(path);
-      const avatarUrl = `${data.publicUrl}?t=${Date.now()}`; // cache-bust
+      const avatarUrl = `${data.publicUrl}?t=${Date.now()}`;
 
-      const headers = await this.authHeaders();
-      await firstValueFrom(
-        this.http.put(`${environment.apiUrl}/profiles/me`, { avatarUrl }, { headers })
-      );
+      // Guardar URL en user_metadata — no requiere backend
+      const { error: updateError } = await this.supabase.client.auth.updateUser({
+        data: { avatarUrl },
+      });
+      if (updateError) return { error: updateError.message };
+
       return { url: avatarUrl };
     } catch (err: any) {
       return { error: err?.message ?? 'Error al subir el avatar' };

@@ -5,7 +5,6 @@ import lombok.Data;
 
 @Data
 public class ReviewRequest {
-    @NotBlank
     @Size(max = 100)
     private String userName;
 

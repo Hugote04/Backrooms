@@ -34,9 +34,12 @@ public class ReviewController {
             @RequestAttribute(name = "userId", required = false) String jwtUserId,
             @RequestHeader(value = "X-User-Id", defaultValue = "") String headerUserId) {
 
-        // Prioridad: JWT validado > header
+        // Prioridad: JWT > header > body (fallback para clientes sin JWT)
         String resolvedId = (jwtUserId != null && !jwtUserId.isBlank()) ? jwtUserId : headerUserId;
-        req.setUserId(resolvedId);
+        if (resolvedId.isBlank() && req.getUserId() != null && !req.getUserId().isBlank()) {
+            resolvedId = req.getUserId();
+        }
+        req.setUserId(resolvedId.isBlank() ? "anonymous" : resolvedId);
         return ResponseEntity.ok(reviewService.create(req));
     }
 

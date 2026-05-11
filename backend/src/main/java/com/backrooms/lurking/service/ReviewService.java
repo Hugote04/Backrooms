@@ -4,6 +4,7 @@ import com.backrooms.lurking.dto.ReviewRequest;
 import com.backrooms.lurking.model.Review;
 import com.backrooms.lurking.repository.CommentRepository;
 import com.backrooms.lurking.repository.ReviewRepository;
+import com.backrooms.lurking.repository.ScoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +15,9 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class ReviewService {
 
-    private final ReviewRepository reviewRepository;
+    private final ReviewRepository  reviewRepository;
     private final CommentRepository commentRepository;
+    private final ScoreRepository   scoreRepository;
 
     public List<Review> getAll() {
         return reviewRepository.findAllByOrderByCreatedAtDesc();
@@ -27,10 +29,11 @@ public class ReviewService {
     }
 
     public Review create(ReviewRequest req) {
-        String userId = req.getUserId() != null ? req.getUserId() : "anonymous";
+        String userId   = req.getUserId() != null && !req.getUserId().isBlank() ? req.getUserId() : "anonymous";
+        String userName = req.getUserName() != null && !req.getUserName().isBlank() ? req.getUserName() : "Anónimo";
         Review review = Review.builder()
                 .userId(userId)
-                .userName(req.getUserName())
+                .userName(userName)
                 .rating(req.getRating())
                 .text(req.getText())
                 .build();
@@ -44,6 +47,10 @@ public class ReviewService {
         }
         review.setRating(req.getRating());
         review.setText(req.getText());
+        // actualizar nombre si viene en el request
+        if (req.getUserName() != null && !req.getUserName().isBlank()) {
+            review.setUserName(req.getUserName());
+        }
         return reviewRepository.save(review);
     }
 
@@ -61,6 +68,7 @@ public class ReviewService {
     public void updateUserName(String userId, String userName) {
         reviewRepository.updateUserNameByUserId(userId, userName);
         commentRepository.updateUserNameByUserId(userId, userName);
+        scoreRepository.updateUserNameByUserId(userId, userName);
     }
 
     public Double getAverageRating() {

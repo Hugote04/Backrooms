@@ -389,11 +389,11 @@ export class ReviewsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editError.set('');
 
     const { error } = await this.reviewService.update(
-      id, user.id, this.editRating(), this.editText.trim()
+      id, user.id, this.auth.getDisplayName(), this.editRating(), this.editText.trim()
     );
 
     if (error) {
-      this.editError.set('Error al guardar los cambios.');
+      this.editError.set('Error al guardar los cambios. Inténtalo de nuevo.');
     } else {
       this.editingId.set('');
       await this.loadReviews();
@@ -405,8 +405,15 @@ export class ReviewsComponent implements OnInit, AfterViewInit, OnDestroy {
   async deleteReview(id: string) {
     const user = this.auth.user();
     if (!user) return;
+
     const { error } = await this.reviewService.delete(id, user.id);
-    if (!error) await this.loadReviews();
+    if (error) {
+      // mostrar error brevemente en la reseña correspondiente
+      this.submitError.set('No se pudo eliminar la reseña. Recarga la página e inténtalo de nuevo.');
+      setTimeout(() => this.submitError.set(''), 4000);
+    } else {
+      await this.loadReviews();
+    }
   }
 
   // ── comentarios ───────────────────────────────────────────────

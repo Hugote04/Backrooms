@@ -51,7 +51,8 @@ export class ReviewService {
 
   async add(userId: string, userName: string, rating: number, text: string): Promise<{ error?: string }> {
     try {
-      const headers = await this.authHeaders();
+      // X-User-Id como fallback si el JWT no se valida en backend
+      const headers = (await this.authHeaders()).set('X-User-Id', userId);
       await firstValueFrom(
         this.http.post<Review>(this.base, { userId, userName, rating, text }, { headers })
       );
@@ -61,11 +62,11 @@ export class ReviewService {
     }
   }
 
-  async update(id: string, userId: string, rating: number, text: string): Promise<{ error?: string }> {
+  async update(id: string, userId: string, userName: string, rating: number, text: string): Promise<{ error?: string }> {
     try {
       const headers = (await this.authHeaders()).set('X-User-Id', userId);
       await firstValueFrom(
-        this.http.put<Review>(`${this.base}/${id}`, { rating, text }, { headers })
+        this.http.put<Review>(`${this.base}/${id}`, { userName, rating, text }, { headers })
       );
       return {};
     } catch (err: any) {
@@ -74,9 +75,9 @@ export class ReviewService {
   }
 
   /** Sincroniza el userName en todas las reseñas y comentarios del usuario */
-  async syncUserName(userName: string): Promise<void> {
+  async syncUserName(userId: string, userName: string): Promise<void> {
     try {
-      const headers = await this.authHeaders();
+      const headers = (await this.authHeaders()).set('X-User-Id', userId);
       await firstValueFrom(
         this.http.patch(`${this.base}/username`, { userName }, { headers })
       );

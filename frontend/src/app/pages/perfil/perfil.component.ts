@@ -350,8 +350,8 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
       else {
         this.displayName = this.editName.trim();
         this.initial     = this.displayName.charAt(0).toUpperCase();
-        // sync nombre en reseñas y comentarios existentes
-        await this.reviewService.syncUserName(this.displayName);
+        // sync nombre en reseñas, comentarios y scores
+        await this.reviewService.syncUserName(this.userId, this.displayName);
       }
     }
 
