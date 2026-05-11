@@ -54,6 +54,11 @@ export class AuthService {
     return this.sb.auth.updateUser({ password });
   }
 
+  async refreshUser() {
+    const { data } = await this.sb.auth.getUser();
+    if (data.user) this.user.set(data.user);
+  }
+
   getDisplayName(): string {
     const user = this.user();
     if (!user) return '';

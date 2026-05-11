@@ -290,12 +290,10 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
       year: 'numeric', month: 'long', day: 'numeric',
     });
 
-    const [stats, avatarUrl] = await Promise.all([
-      this.scoreService.getMyStats(this.userId),
-      this.scoreService.getAvatarUrl(this.userId),
-    ]);
-    this.stats       = stats;
-    this.avatarUrl   = avatarUrl;
+    // avatar disponible inmediatamente desde user_metadata
+    this.avatarUrl = (user.user_metadata?.['avatarUrl'] as string) ?? null;
+
+    this.stats = await this.scoreService.getMyStats(this.userId);
     this.loadingStats = false;
     this.editName    = this.displayName;
   }
@@ -323,6 +321,8 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.avatarError = result.error;
     } else {
       this.avatarUrl = result.url ?? null;
+      // actualizar signal de auth → navbar se actualiza en tiempo real
+      await this.auth.refreshUser();
     }
   }
 
