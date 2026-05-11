@@ -73,6 +73,16 @@ export class ReviewService {
     }
   }
 
+  /** Sincroniza el userName en todas las reseñas y comentarios del usuario */
+  async syncUserName(userName: string): Promise<void> {
+    try {
+      const headers = await this.authHeaders();
+      await firstValueFrom(
+        this.http.patch(`${this.base}/username`, { userName }, { headers })
+      );
+    } catch { /* silencioso — no crítico */ }
+  }
+
   async delete(id: string, userId: string): Promise<{ error?: string }> {
     try {
       const headers = (await this.authHeaders()).set('X-User-Id', userId);

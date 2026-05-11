@@ -62,6 +62,23 @@ public class ReviewController {
         return ResponseEntity.ok(Map.of("message", "Reseña eliminada"));
     }
 
+    /** Actualiza el userName en todas las reseñas y comentarios del usuario autenticado */
+    @PatchMapping("/username")
+    public ResponseEntity<Map<String, String>> updateUsername(
+            @RequestBody Map<String, String> body,
+            @RequestAttribute(name = "userId", required = false) String jwtUserId,
+            @RequestHeader(value = "X-User-Id", defaultValue = "") String headerUserId) {
+
+        String resolvedId = (jwtUserId != null && !jwtUserId.isBlank()) ? jwtUserId : headerUserId;
+        if (resolvedId.isBlank()) return ResponseEntity.status(401).build();
+
+        String userName = body.get("userName");
+        if (userName == null || userName.isBlank()) return ResponseEntity.badRequest().build();
+
+        reviewService.updateUserName(resolvedId, userName.trim());
+        return ResponseEntity.ok(Map.of("message", "Nombre actualizado"));
+    }
+
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getStats() {
         return ResponseEntity.ok(Map.of(

@@ -57,6 +57,12 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
+    @Transactional
+    public void updateUserName(String userId, String userName) {
+        reviewRepository.updateUserNameByUserId(userId, userName);
+        commentRepository.updateUserNameByUserId(userId, userName);
+    }
+
     public Double getAverageRating() {
         return reviewRepository.findAverageRating();
     }

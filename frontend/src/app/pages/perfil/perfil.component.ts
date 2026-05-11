@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { gsap } from 'gsap';
 import { AuthService } from '../../services/auth.service';
 import { ScoreService, UserStats } from '../../services/score.service';
+import { ReviewService } from '../../services/review.service';
 
 @Component({
   selector: 'app-perfil-page',
@@ -274,6 +275,7 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
     private auth: AuthService,
     private router: Router,
     private scoreService: ScoreService,
+    private reviewService: ReviewService,
   ) {}
 
   async ngOnInit() {
@@ -289,7 +291,7 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     const [stats, avatarUrl] = await Promise.all([
-      this.scoreService.getMyStats(),
+      this.scoreService.getMyStats(this.userId),
       this.scoreService.getAvatarUrl(this.userId),
     ]);
     this.stats       = stats;
@@ -348,6 +350,8 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
       else {
         this.displayName = this.editName.trim();
         this.initial     = this.displayName.charAt(0).toUpperCase();
+        // sync nombre en reseñas y comentarios existentes
+        await this.reviewService.syncUserName(this.displayName);
       }
     }
 

@@ -42,14 +42,21 @@ export class ScoreService {
     }
   }
 
-  /** Stats del usuario logado */
-  async getMyStats(): Promise<UserStats | null> {
+  /** Stats del usuario — usa el endpoint público /user/{id} y calcula en cliente */
+  async getMyStats(userId: string): Promise<UserStats | null> {
     try {
-      const headers = await this.authHeaders();
-      return await firstValueFrom(this.http.get<UserStats>(`${this.base}/me`, { headers }));
-    } catch {
-      return null;
-    }
+      const scores = await firstValueFrom(
+        this.http.get<Score[]>(`${this.base}/user/${userId}`)
+      );
+      if (!scores || scores.length === 0)
+        return { totalPartidas: 0, puzlesResueltos: 0, mejorTiempo: 0, partidas: [] };
+      return {
+        totalPartidas:   scores.length,
+        puzlesResueltos: scores.reduce((s, r) => s + r.puzlesResueltos, 0),
+        mejorTiempo:     Math.min(...scores.map(r => r.tiempoSegundos)),
+        partidas:        scores,
+      };
+    } catch { return null; }
   }
 
   /** Obtener URL de avatar de un usuario */
@@ -65,15 +72,21 @@ export class ScoreService {
   /** Subir avatar a Supabase Storage y guardar URL en backend */
   async uploadAvatar(userId: string, file: File): Promise<{ url?: string; error?: string }> {
     try {
-      const ext  = file.name.split('.').pop();
+      const ext  = file.name.split('.').pop() ?? 'jpg';
       const path = `${userId}/avatar.${ext}`;
       const { error: uploadError } = await this.supabase.client.storage
         .from('avatars')
-        .upload(path, file, { upsert: true });
-      if (uploadError) return { error: uploadError.message };
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (uploadError) {
+        if (uploadError.message.includes('Bucket not found') || uploadError.message.includes('404')) {
+          return { error: 'Bucket "avatars" no existe en Supabase Storage. Créalo como público en el dashboard.' };
+        }
+        return { error: uploadError.message };
+      }
 
       const { data } = this.supabase.client.storage.from('avatars').getPublicUrl(path);
-      const avatarUrl = data.publicUrl;
+      const avatarUrl = `${data.publicUrl}?t=${Date.now()}`; // cache-bust
 
       const headers = await this.authHeaders();
       await firstValueFrom(
