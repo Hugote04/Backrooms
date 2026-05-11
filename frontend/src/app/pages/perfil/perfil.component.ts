@@ -1,5 +1,6 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { gsap } from 'gsap';
 import { AuthService } from '../../services/auth.service';
 import { ScoreService, UserStats } from '../../services/score.service';
@@ -7,7 +8,7 @@ import { ScoreService, UserStats } from '../../services/score.service';
 @Component({
   selector: 'app-perfil-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   template: `
     <div class="min-h-screen bg-[#050500] wallpaper-bg flex items-center justify-center px-4 py-16">
       <div class="w-full max-w-md">
@@ -136,6 +137,92 @@ import { ScoreService, UserStats } from '../../services/score.service';
               }
             </div>
 
+            <!-- Editar perfil -->
+            <div class="mb-6 border-t border-[#d4c87a]/10 pt-6">
+              <button
+                type="button"
+                (click)="editMode = !editMode"
+                class="w-full py-2.5 font-mono tracking-widest uppercase text-xs text-[#5a5828]
+                       border border-[#5a5828]/40 hover:border-[#8b7a2e]/60 hover:text-[#8b7a2e]
+                       transition-all duration-200 mb-4"
+              >
+                {{ editMode ? 'Cancelar' : 'Editar perfil' }}
+              </button>
+
+              @if (editMode) {
+                <form (ngSubmit)="saveProfile()" class="space-y-4">
+
+                  <!-- Nombre -->
+                  <div>
+                    <label class="block text-[#5a5828] font-mono text-[0.65rem] tracking-widest uppercase mb-1.5">
+                      Nombre de usuario
+                    </label>
+                    <input
+                      type="text"
+                      [(ngModel)]="editName"
+                      name="editName"
+                      class="w-full bg-[#050500] border border-[#d4c87a]/20 px-3 py-2
+                             text-[#b8a84a] font-mono text-xs tracking-wide
+                             focus:outline-none focus:border-[#d4c87a]/50 transition-colors"
+                      placeholder="Tu nombre"
+                    />
+                  </div>
+
+                  <!-- Contraseña -->
+                  <div>
+                    <label class="block text-[#5a5828] font-mono text-[0.65rem] tracking-widest uppercase mb-1.5">
+                      Nueva contraseña
+                    </label>
+                    <input
+                      type="password"
+                      [(ngModel)]="editPassword"
+                      name="editPassword"
+                      class="w-full bg-[#050500] border border-[#d4c87a]/20 px-3 py-2
+                             text-[#b8a84a] font-mono text-xs tracking-wide
+                             focus:outline-none focus:border-[#d4c87a]/50 transition-colors"
+                      placeholder="Dejar vacío para no cambiar"
+                    />
+                  </div>
+
+                  <!-- Confirmar contraseña -->
+                  @if (editPassword) {
+                    <div>
+                      <label class="block text-[#5a5828] font-mono text-[0.65rem] tracking-widest uppercase mb-1.5">
+                        Confirmar contraseña
+                      </label>
+                      <input
+                        type="password"
+                        [(ngModel)]="editPasswordConfirm"
+                        name="editPasswordConfirm"
+                        class="w-full bg-[#050500] border border-[#d4c87a]/20 px-3 py-2
+                               text-[#b8a84a] font-mono text-xs tracking-wide
+                               focus:outline-none focus:border-[#d4c87a]/50 transition-colors"
+                        placeholder="Repite la contraseña"
+                      />
+                    </div>
+                  }
+
+                  @if (editError) {
+                    <p class="text-red-400/80 font-mono text-xs">{{ editError }}</p>
+                  }
+                  @if (editSuccess) {
+                    <p class="text-[#d4c87a]/80 font-mono text-xs">{{ editSuccess }}</p>
+                  }
+
+                  <button
+                    type="submit"
+                    [disabled]="savingProfile"
+                    class="w-full py-2.5 font-mono tracking-widest uppercase text-xs
+                           bg-[#d4c87a]/10 border border-[#d4c87a]/40 text-[#d4c87a]
+                           hover:bg-[#d4c87a]/20 transition-all duration-200
+                           disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {{ savingProfile ? 'Guardando...' : 'Guardar cambios' }}
+                  </button>
+                </form>
+              }
+            </div>
+
             <button
               type="button"
               (click)="signOut()"
@@ -171,6 +258,15 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
   uploadingAvatar = false;
   avatarError    = '';
 
+  // edición
+  editMode            = false;
+  editName            = '';
+  editPassword        = '';
+  editPasswordConfirm = '';
+  editError           = '';
+  editSuccess         = '';
+  savingProfile       = false;
+
   private userId = '';
   private ctx!: gsap.Context;
 
@@ -199,6 +295,7 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.stats       = stats;
     this.avatarUrl   = avatarUrl;
     this.loadingStats = false;
+    this.editName    = this.displayName;
   }
 
   ngAfterViewInit() {
@@ -228,6 +325,45 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   formatTime(s: number): string { return ScoreService.formatTime(s); }
+
+  async saveProfile() {
+    this.editError   = '';
+    this.editSuccess = '';
+
+    if (this.editPassword && this.editPassword !== this.editPasswordConfirm) {
+      this.editError = 'Las contraseñas no coinciden.';
+      return;
+    }
+    if (this.editPassword && this.editPassword.length < 6) {
+      this.editError = 'La contraseña debe tener al menos 6 caracteres.';
+      return;
+    }
+
+    this.savingProfile = true;
+    let hasError = false;
+
+    if (this.editName.trim() && this.editName.trim() !== this.displayName) {
+      const { error } = await this.auth.updateName(this.editName.trim());
+      if (error) { this.editError = error.message; hasError = true; }
+      else {
+        this.displayName = this.editName.trim();
+        this.initial     = this.displayName.charAt(0).toUpperCase();
+      }
+    }
+
+    if (!hasError && this.editPassword) {
+      const { error } = await this.auth.updatePassword(this.editPassword);
+      if (error) { this.editError = error.message; hasError = true; }
+    }
+
+    this.savingProfile = false;
+    if (!hasError) {
+      this.editSuccess         = '¡Perfil actualizado!';
+      this.editPassword        = '';
+      this.editPasswordConfirm = '';
+      setTimeout(() => { this.editSuccess = ''; this.editMode = false; }, 1500);
+    }
+  }
 
   async signOut() {
     await this.auth.signOut();

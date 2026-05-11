@@ -41,6 +41,19 @@ export class AuthService {
     return this.sb.auth.signOut();
   }
 
+  async updateName(nombre: string) {
+    const { error } = await this.sb.auth.updateUser({ data: { nombre } });
+    if (!error) {
+      const { data } = await this.sb.auth.getUser();
+      if (data.user) this.user.set(data.user);
+    }
+    return { error };
+  }
+
+  async updatePassword(password: string) {
+    return this.sb.auth.updateUser({ password });
+  }
+
   getDisplayName(): string {
     const user = this.user();
     if (!user) return '';
