@@ -39,6 +39,12 @@ interface NavLink { label: string; anchor: string; }
                 >{{ link.label }}</a>
               </li>
             }
+            <li>
+              <a
+                routerLink="/leaderboard"
+                class="text-[#b8a84a] hover:text-[#f0ecc4] text-xs tracking-widest font-mono uppercase transition-colors duration-200"
+              >Leaderboard</a>
+            </li>
           </ul>
 
           <!-- Derecha: auth + descarga + hamburger -->
@@ -119,6 +125,13 @@ interface NavLink { label: string; anchor: string; }
                   >{{ link.label }}</a>
                 </li>
               }
+              <li>
+                <a
+                  routerLink="/leaderboard"
+                  class="block text-[#b8a84a] hover:text-[#d4c87a] text-xs font-mono tracking-widest uppercase py-1 transition-colors"
+                  (click)="menuOpen.set(false)"
+                >Leaderboard</a>
+              </li>
               <li class="pt-2 border-t border-[#d4c87a]/10 flex flex-col gap-2">
                 @if (auth.user()) {
                   <a routerLink="/perfil" class="text-[#b8a84a] text-xs font-mono uppercase py-1" (click)="menuOpen.set(false)">
@@ -166,6 +179,8 @@ export class NavbarComponent implements AfterViewInit, OnDestroy {
     { label: 'FAQ',             anchor: 'faq'      },
     { label: 'Contacto',        anchor: 'contact'  },
   ];
+
+  readonly leaderboardRoute = '/leaderboard';
 
   private ctx!: gsap.Context;
 
