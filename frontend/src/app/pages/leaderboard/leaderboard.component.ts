@@ -69,8 +69,8 @@ import { ScoreService, Score } from '../../services/score.service';
             @for (score of filtered; track score.id; let i = $index) {
               <div
                 class="grid grid-cols-[3rem_1fr_1fr_6rem_6rem] gap-4 px-6 py-4
-                       border-b border-[#d4c87a]/05 hover:bg-[#d4c87a]/[0.03] transition-colors"
-                [class.border-[#d4c87a]/20]="i === 0"
+                       hover:bg-[#d4c87a]/[0.03] transition-colors"
+                [style.border-bottom]="i === 0 ? '1px solid rgba(212,200,122,0.2)' : '1px solid rgba(212,200,122,0.05)'"
               >
                 <!-- Posición -->
                 <span class="font-mono text-sm font-bold"
