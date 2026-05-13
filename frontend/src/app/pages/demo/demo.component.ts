@@ -250,10 +250,9 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
   });
 
   controls = [
-    { key: 'WASD',  action: 'Moverse'         },
-    { key: 'Mouse', action: 'Mirar'            },
-    { key: 'F',     action: 'Linterna'         },
-    { key: 'ESC',   action: 'Pausa / Menú'     },
+    { key: 'WASD',  action: 'Moverse'   },
+    { key: 'Mouse', action: 'Mirar'     },
+    { key: 'TAB',   action: 'Inventario'},
   ];
 
   private unityInstance: { SetFullscreen: (v: number) => void } | null = null;
