@@ -24,12 +24,13 @@ import { RouterLink } from '@angular/router';
       <div class="w-full max-w-2xl bg-[#0e0d04] border border-[#d4c87a]/20 p-8 mb-8">
 
         <div class="flex items-center gap-3 mb-6">
-          <span class="text-3xl">👾</span>
+          <img src="logo.png" alt="logo" class="w-8 h-8 opacity-80"
+               style="filter: drop-shadow(0 0 6px rgba(212,200,122,0.4));" />
           <div>
             <h1 class="text-[#d4c87a] font-mono font-bold tracking-widest uppercase text-lg">
               Descargar el juego
             </h1>
-            <p class="text-[#5a5828] font-mono text-xs">Windows · v1.0 · Build estable</p>
+            <p class="text-[#5a5828] font-mono text-xs">v1.0 · Gratuito · Windows · macOS · Android</p>
           </div>
         </div>
 
@@ -39,10 +40,32 @@ import { RouterLink } from '@angular/router';
           Descarga gratuita, sin instalación necesaria.
         </p>
 
+        <!-- Plataformas -->
+        <div class="space-y-3 mb-8">
+          @for (p of platforms; track p.os) {
+            <a [href]="p.url" target="_blank" rel="noopener"
+               [class]="p.primary
+                 ? 'flex items-center justify-between w-full px-5 py-4 font-mono font-bold text-sm tracking-widest uppercase text-[#050500] bg-[#d4c87a] hover:bg-[#f0ecc4] hover:shadow-[0_0_32px_rgba(212,200,122,0.35)] transition-all duration-200'
+                 : 'flex items-center justify-between w-full px-5 py-4 font-mono text-sm tracking-widest uppercase border border-[#d4c87a]/30 text-[#d4c87a] hover:bg-[#d4c87a]/10 hover:border-[#d4c87a]/60 transition-all duration-200'">
+              <div class="flex items-center gap-3">
+                <span class="text-lg">{{ p.icon }}</span>
+                <div class="text-left">
+                  <span class="block">{{ p.label }}</span>
+                  <span class="block font-normal text-xs opacity-60">{{ p.sub }}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-xs font-normal opacity-70">
+                <span>{{ p.size }}</span>
+                <span>⬇</span>
+              </div>
+            </a>
+          }
+        </div>
+
         <!-- Requisitos -->
-        <div class="mb-8">
+        <div>
           <h2 class="text-[#8b7a2e] font-mono text-xs tracking-widest uppercase mb-4">
-            Requisitos del sistema
+            Requisitos del sistema (PC)
           </h2>
           <div class="grid grid-cols-2 gap-px bg-[#d4c87a]/10">
             @for (row of requirements; track row.label) {
@@ -53,34 +76,34 @@ import { RouterLink } from '@angular/router';
             }
           </div>
         </div>
-
-        <!-- Botón descarga -->
-        <a
-          href="https://drive.google.com/uc?export=download&id=1M8HYMarU7bxuWN2x9kFwY0iSO3sbb_wt"
-          target="_blank"
-          rel="noopener"
-          class="flex items-center justify-center gap-3 w-full py-4 font-mono font-bold text-sm
-                 tracking-widest uppercase text-[#050500] bg-[#d4c87a]
-                 hover:bg-[#f0ecc4] hover:shadow-[0_0_32px_rgba(212,200,122,0.35)]
-                 transition-all duration-200"
-        >
-          <span>⬇</span>
-          <span>Descargar para Windows</span>
-          <span class="text-[#8b7a2e] font-normal text-xs">~408 MB</span>
-        </a>
-
-        <p class="text-center text-[#3a3620] font-mono text-xs mt-4">
-          Solo disponible para Windows 10/11 x64
-        </p>
       </div>
 
-      <!-- Aviso -->
-      <div class="w-full max-w-2xl border border-[#d4c87a]/10 p-4 text-center">
-        <p class="text-[#3a3620] font-mono text-xs leading-relaxed">
-          ⚠ Si Windows SmartScreen bloquea el ejecutable, haz clic en
-          <span class="text-[#5a5828]">"Más información" → "Ejecutar de todas formas"</span>.
-          El juego no contiene malware.
-        </p>
+      <!-- Avisos -->
+      <div class="w-full max-w-2xl space-y-3">
+        <div class="border border-[#d4c87a]/10 p-4">
+          <p class="text-[#3a3620] font-mono text-xs leading-relaxed">
+            ⚠ <span class="text-[#5a5828]">Windows:</span>
+            Si SmartScreen bloquea el ejecutable, clic en
+            <span class="text-[#5a5828]">"Más información" → "Ejecutar de todas formas"</span>.
+            El juego no contiene malware.
+          </p>
+        </div>
+        <div class="border border-[#d4c87a]/10 p-4">
+          <p class="text-[#3a3620] font-mono text-xs leading-relaxed">
+            ⚠ <span class="text-[#5a5828]">Android:</span>
+            Activa <span class="text-[#5a5828]">"Instalar apps de fuentes desconocidas"</span>
+            en Ajustes → Seguridad antes de instalar el APK.
+          </p>
+        </div>
+        <div class="border border-[#d4c87a]/10 p-4 flex items-center justify-between">
+          <p class="text-[#3a3620] font-mono text-xs">
+            ¿Prefieres jugar en el navegador?
+          </p>
+          <a routerLink="/demo"
+             class="text-[#5a5828] hover:text-[#d4c87a] font-mono text-xs tracking-widest uppercase transition-colors">
+            Demo web →
+          </a>
+        </div>
       </div>
 
       <p class="mt-8">
@@ -93,6 +116,37 @@ import { RouterLink } from '@angular/router';
   `,
 })
 export class DescargaPageComponent {
+
+  platforms = [
+    {
+      os:      'windows',
+      icon:    '🖥',
+      label:   'Descargar para Windows',
+      sub:     'Windows 10 / 11 · 64 bits · .zip',
+      size:    '~167 MB',
+      url:     'https://drive.google.com/uc?export=download&id=1ue0FN7I3hCt4EtsiG-1Bs8hn7hMwkkuA',
+      primary: true,
+    },
+    {
+      os:      'mac',
+      icon:    '🍎',
+      label:   'Descargar para macOS',
+      sub:     'macOS 12+ · .zip con .app',
+      size:    '~175 MB',
+      url:     'https://drive.google.com/uc?export=download&id=1tP-TB2kmeHkqSA06G2752uyNIdBVL21b',
+      primary: false,
+    },
+    {
+      os:      'android',
+      icon:    '📱',
+      label:   'Descargar para Android',
+      sub:     'Android 8.0+ · APK',
+      size:    '~233 MB',
+      url:     'https://drive.google.com/uc?export=download&id=15AqNDihyCZ4Rj-Q3rkZ-y0tbk8NnjDRJ',
+      primary: false,
+    },
+  ];
+
   requirements = [
     { label: 'SO',        value: 'Windows 10 / 11 (64 bits)' },
     { label: 'CPU',       value: 'Intel i5 / AMD Ryzen 5 o superior' },
