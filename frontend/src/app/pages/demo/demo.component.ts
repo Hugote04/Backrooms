@@ -300,7 +300,7 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const script = document.createElement('script');
     script.id  = 'unity-loader-script';
-    script.src = 'game/Build/Web.loader.js';
+    script.src = '/game/Build/Web.loader.js';
     script.onload = () => this.initUnityInstance();
     script.onerror = () => {
       this.phase.set('error');
@@ -320,10 +320,10 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       const config = {
-        dataUrl:             'game/Build/Web.data.br',
-        frameworkUrl:        'game/Build/Web.framework.js.br',
-        codeUrl:             'game/Build/Web.wasm.br',
-        streamingAssetsUrl:  'StreamingAssets',
+        dataUrl:             '/game/Build/Web.data.br',
+        frameworkUrl:        '/game/Build/Web.framework.js.br',
+        codeUrl:             '/game/Build/Web.wasm.br',
+        streamingAssetsUrl:  '/game/StreamingAssets',
         companyName:         'PFC',
         productName:         'Lurking In The Shadows',
         productVersion:      '1.0',
