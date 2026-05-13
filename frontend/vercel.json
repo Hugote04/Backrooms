@@ -1,6 +1,38 @@
 {
   "buildCommand": "npm run tw:build && npx ng build --configuration=production",
   "outputDirectory": "dist/frontend/browser",
+  "headers": [
+    {
+      "source": "/game/Build/Web.data.br",
+      "headers": [
+        { "key": "Content-Encoding", "value": "br" },
+        { "key": "Content-Type",     "value": "application/octet-stream" },
+        { "key": "Cache-Control",    "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/game/Build/Web.framework.js.br",
+      "headers": [
+        { "key": "Content-Encoding", "value": "br" },
+        { "key": "Content-Type",     "value": "application/javascript" },
+        { "key": "Cache-Control",    "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/game/Build/Web.wasm.br",
+      "headers": [
+        { "key": "Content-Encoding", "value": "br" },
+        { "key": "Content-Type",     "value": "application/wasm" },
+        { "key": "Cache-Control",    "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/game/Build/Web.loader.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache" }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]

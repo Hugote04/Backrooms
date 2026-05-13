@@ -15,6 +15,8 @@ target/
 # Gradle
 .gradle/
 build/
+# Excepción: archivos de build del juego Unity WebGL
+!frontend/public/game/Build/
 
 # IDE
 .idea/
