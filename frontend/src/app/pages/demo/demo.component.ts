@@ -1,6 +1,6 @@
 import {
   Component, OnInit, OnDestroy, AfterViewInit,
-  ViewChild, ElementRef, signal, computed, ChangeDetectorRef
+  ViewChild, ElementRef, signal, computed, ChangeDetectorRef, NgZone
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { gsap } from 'gsap';
@@ -133,17 +133,21 @@ declare function createUnityInstance(
             <!-- Canvas del juego (oculto hasta que cargue) -->
             <div [style.display]="phase() === 'playing' ? 'block' : 'none'"
                  class="relative">
-              <canvas #unityCanvas
-                      id="unity-canvas"
-                      tabindex="-1"
-                      class="w-full aspect-video block bg-[#231F20]">
-              </canvas>
 
-              <!-- Overlay de muerte / reinicio (aparece cuando Unity falla al cargar escena) -->
+              <!-- Canvas: se destruye/recrea en cada restart para liberar el contexto WebGL -->
+              @if (showCanvas()) {
+                <canvas #unityCanvas
+                        id="unity-canvas"
+                        tabindex="-1"
+                        class="w-full aspect-video block bg-[#231F20]">
+                </canvas>
+              }
+
+              <!-- Overlay de muerte / reinicio -->
               @if (showDeathOverlay()) {
-                <div class="absolute inset-0 flex flex-col items-center justify-center gap-8
+                <div class="absolute inset-0 z-50 flex flex-col items-center justify-center gap-8
                             bg-black/85 backdrop-blur-sm"
-                     style="aspect-ratio:16/9;">
+                     style="pointer-events: all;">
                   <div class="text-center">
                     <p class="text-red-400/80 font-mono text-2xl font-bold tracking-[0.3em] uppercase mb-2">
                       HAS MUERTO
@@ -155,10 +159,11 @@ declare function createUnityInstance(
                   <div class="flex flex-col items-center gap-3">
                     <button type="button"
                             (click)="restartGame()"
+                            style="pointer-events: all; position: relative; z-index: 60;"
                             class="px-8 py-3 font-mono tracking-widest uppercase text-sm
                                    border border-[#d4c87a]/60 text-[#d4c87a]
                                    hover:bg-[#d4c87a]/15 hover:shadow-[0_0_20px_rgba(212,200,122,0.2)]
-                                   transition-all duration-200">
+                                   transition-all duration-200 cursor-pointer">
                       ↺ Reiniciar
                     </button>
                     <a routerLink="/"
@@ -266,10 +271,12 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('heroSection') heroRef!: ElementRef;
   @ViewChild('splashScreen') splashRef!: ElementRef;
 
-  phase           = signal<'idle' | 'loading' | 'playing' | 'error'>('idle');
-  progress        = signal(0);
-  errorMsg        = signal('');
+  phase            = signal<'idle' | 'loading' | 'playing' | 'error'>('idle');
+  progress         = signal(0);
+  errorMsg         = signal('');
   showDeathOverlay = signal(false);
+  /** Controla si el canvas existe en el DOM; false→destroy WebGL context, true→recrear */
+  showCanvas       = signal(true);
 
   progressPct = computed(() => Math.round(this.progress() * 100));
   loadingLabel = computed(() => {
@@ -282,9 +289,9 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
   });
 
   controls = [
-    { key: 'WASD',  action: 'Moverse'   },
-    { key: 'Mouse', action: 'Mirar'     },
-    { key: 'TAB',   action: 'Inventario'},
+    { key: 'WASD',  action: 'Moverse'    },
+    { key: 'Mouse', action: 'Mirar'      },
+    { key: 'TAB',   action: 'Inventario' },
   ];
 
   private unityInstance: { SetFullscreen: (v: number) => void } | null = null;
@@ -292,7 +299,16 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private boundRefocus!: () => void;
   private boundPointerLockChange!: () => void;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  // Referencias a los métodos originales de consola para poder restaurarlos
+  private origLog!:  (...a: unknown[]) => void;
+  private origErr!:  (...a: unknown[]) => void;
+  private origWarn!: (...a: unknown[]) => void;
+  private consolePatchActive = false;
+
+  // Detecta si el jugador ya transitó de escena (necesario para isDeathCrash)
+  private sceneUnloaded = false;
+
+  constructor(private cdr: ChangeDetectorRef, private zone: NgZone) {}
 
   ngOnInit() {}
 
@@ -307,6 +323,7 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.ctx?.revert();
     this.removeCanvasFocusHandlers();
+    this.restoreConsole();
   }
 
   startLoading() {
@@ -326,60 +343,79 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.unityInstance?.SetFullscreen(1);
   }
 
-  /** Reinicia el juego recargando la instancia Unity completa */
+  /** Reinicia el juego destruyendo el canvas (libera WebGL) y recargando Unity */
   restartGame() {
+    // 1. Restaurar la consola antes de hacer cualquier cambio
+    this.restoreConsole();
+
+    // 2. Limpiar estado
     this.showDeathOverlay.set(false);
+    this.sceneUnloaded = false;
     this.unityInstance = null;
 
-    // Eliminar el script loader para forzar recarga limpia
-    const old = document.getElementById('unity-loader-script');
-    old?.remove();
-
+    // 3. Destruir canvas para liberar el contexto WebGL anterior
+    this.showCanvas.set(false);
     this.phase.set('loading');
     this.progress.set(0);
+
+    // Eliminar el script loader para forzar recarga limpia
+    document.getElementById('unity-loader-script')?.remove();
+
     this.cdr.detectChanges();
 
-    // Pequeña pausa para que el canvas se re-renderice antes de init
-    setTimeout(() => this.loadUnity(), 100);
+    // 4. Recrear canvas y reiniciar Unity
+    setTimeout(() => {
+      this.showCanvas.set(true);
+      this.cdr.detectChanges();
+
+      // Aplicar parches de consola frescos para la nueva sesión
+      this.patchConsole();
+
+      // Esperar un tick más para que Angular renderice el nuevo canvas
+      setTimeout(() => this.loadUnity(), 80);
+    }, 150);
   }
 
-  /**
-   * Cuando el pointer lock se libera (p.ej. al morir) el canvas pierde el foco
-   * y los clics en los botones del juego no llegan a Unity.
-   * Solución: re-enfocar el canvas en cualquier clic sobre él y al salir del pointer lock.
-   */
-  private sceneUnloaded = false;
+  // ─── Detección de errores Unity ────────────────────────────────────────────
 
   /** Recibe todos los errores de Unity y decide si mostrar el overlay de muerte */
   onUnityError(msg: string) {
-    // Patrón 1: fallo directo al cargar escena (Title no en build)
+    // GUARD: si el overlay ya está activo, ignorar todos los errores siguientes.
+    // Sin este guard, Unity en estado crasheado dispara console.error decenas de
+    // veces por frame, saturando el change detection y bloqueando los clics.
+    if (this.showDeathOverlay()) return;
+
+    // Patrón 1: fallo directo al cargar escena (Title no está en el build WebGL)
     const isSceneError =
       msg.includes("couldn't be loaded") ||
-      msg.includes("Invalid scene") ||
+      msg.includes("Invalid scene")       ||
       msg.includes("Scene '");
 
     // Patrón 2: crash en la escena de muerte (ArgumentNullException tras transición)
-    // Solo se dispara cuando ya hubo un unload de escena (sceneUnloaded = true)
+    // Solo se activa cuando ya hubo un unload de escena (sceneUnloaded = true)
     const isDeathCrash =
       this.sceneUnloaded &&
       msg.includes('ArgumentNullException');
 
     if (isSceneError || isDeathCrash) {
-      this.showDeathOverlay.set(true);
-      this.cdr.detectChanges();
+      this.zone.run(() => {
+        this.showDeathOverlay.set(true);
+        this.cdr.detectChanges();
+      });
     }
   }
+
+  // ─── Canvas focus handlers (para que los botones de Unity funcionen) ───────
 
   private setupCanvasFocusHandlers(canvas: HTMLCanvasElement) {
     this.boundRefocus = () => { canvas.focus(); };
     this.boundPointerLockChange = () => {
       if (!document.pointerLockElement) {
-        // Pointer lock liberado: el siguiente clic debe re-enfocar el canvas
         canvas.focus();
       }
     };
-    canvas.addEventListener('click',       this.boundRefocus);
-    canvas.addEventListener('mousedown',   this.boundRefocus);
+    canvas.addEventListener('click',     this.boundRefocus);
+    canvas.addEventListener('mousedown', this.boundRefocus);
     document.addEventListener('pointerlockchange', this.boundPointerLockChange);
   }
 
@@ -394,19 +430,54 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  // ─── Intercepción de consola ────────────────────────────────────────────────
+
   private patchConsole() {
-    const orig = console.log.bind(console);
+    if (this.consolePatchActive) return; // Evitar doble parcheo
+    this.consolePatchActive = true;
+
+    // Guardar referencias originales en campos de clase para poder restaurarlas
+    this.origLog  = console.log.bind(console);
+    this.origErr  = console.error.bind(console);
+    this.origWarn = console.warn.bind(console);
+
+    // console.log: detectar cambio de escena (precede al crash)
     console.log = (...args: unknown[]) => {
       const msg = args.join(' ');
       if (msg.includes('Unloading') && msg.includes('Serialized files')) {
         this.sceneUnloaded = true;
       }
-      orig(...args);
+      this.origLog(...args);
+    };
+
+    // console.error: aquí llegan los errores de Unity (_JS_Log_Dump)
+    console.error = (...args: unknown[]) => {
+      const msg = args.join(' ');
+      this.onUnityError(msg);
+      this.origErr(...args);
+    };
+
+    // console.warn: por si algunos errores llegan como warning
+    console.warn = (...args: unknown[]) => {
+      const msg = args.join(' ');
+      if (msg.includes("couldn't be loaded") || msg.includes('Invalid scene')) {
+        this.onUnityError(msg);
+      }
+      this.origWarn(...args);
     };
   }
 
+  private restoreConsole() {
+    if (!this.consolePatchActive) return;
+    if (this.origLog)  console.log   = this.origLog;
+    if (this.origErr)  console.error = this.origErr;
+    if (this.origWarn) console.warn  = this.origWarn;
+    this.consolePatchActive = false;
+  }
+
+  // ─── Carga de Unity ─────────────────────────────────────────────────────────
+
   private loadUnity() {
-    // Evitar doble carga si el script ya existe
     const existingScript = document.getElementById('unity-loader-script');
     if (existingScript) {
       this.initUnityInstance();
@@ -414,9 +485,9 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const script = document.createElement('script');
-    script.id  = 'unity-loader-script';
-    script.src = '/game/Build/Web.loader.js';
-    script.onload = () => this.initUnityInstance();
+    script.id    = 'unity-loader-script';
+    script.src   = '/game/Build/Web.loader.js';
+    script.onload  = () => this.initUnityInstance();
     script.onerror = () => {
       this.phase.set('error');
       this.errorMsg.set('No se pudo cargar el loader del juego.');
@@ -425,7 +496,7 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initUnityInstance() {
-    // Esperar a que el canvas esté visible en el DOM
+    // Esperar a que Angular renderice el canvas nuevo en el DOM
     setTimeout(() => {
       const canvas = this.canvasRef?.nativeElement;
       if (!canvas) {
@@ -435,18 +506,15 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       const config = {
-        dataUrl:             '/game/Build/Web.data.br',
-        frameworkUrl:        '/game/Build/Web.framework.js.br',
-        codeUrl:             '/game/Build/Web.wasm.br',
-        streamingAssetsUrl:  '/game/StreamingAssets',
-        companyName:         'PFC',
-        productName:         'Lurking In The Shadows',
-        productVersion:      '1.0',
-        // Intercepta errores de Unity para detectar muerte del jugador
+        dataUrl:            '/game/Build/Web.data.br',
+        frameworkUrl:       '/game/Build/Web.framework.js.br',
+        codeUrl:            '/game/Build/Web.wasm.br',
+        streamingAssetsUrl: '/game/StreamingAssets',
+        companyName:        'PFC',
+        productName:        'Lurking In The Shadows',
+        productVersion:     '1.0',
         showBanner: (msg: string, type: string) => {
-          if (type === 'error') {
-            this.onUnityError(msg);
-          }
+          if (type === 'error') { this.onUnityError(msg); }
         },
       };
 
@@ -458,9 +526,7 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
           this.unityInstance = instance;
           this.phase.set('playing');
           this.cdr.detectChanges();
-          // Re-focus handlers: arregla botones de reinicio/menú tras muerte
           setTimeout(() => this.setupCanvasFocusHandlers(canvas), 100);
-          // Animar controles
           setTimeout(() => {
             gsap.from('#controlsBar > *', {
               autoAlpha: 0, y: 10, stagger: 0.06, duration: 0.4, ease: 'power1.out',
@@ -472,6 +538,6 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
           this.errorMsg.set(msg ?? 'Error desconocido al inicializar Unity.');
           this.cdr.detectChanges();
         });
-    }, 50);
+    }, 80);
   }
 }
