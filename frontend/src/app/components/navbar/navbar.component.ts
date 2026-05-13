@@ -18,15 +18,20 @@ interface NavLink { label: string; anchor: string; }
         <div class="flex items-center justify-between h-14">
 
           <!-- Logo -->
-          <a href="#" class="flex items-center gap-3">
-            <span class="text-base font-bold tracking-[0.15em] text-[#d4c87a] flicker-slow"
-                  style="font-family: 'Space Mono', monospace;">
-              BACKROOMS
-            </span>
-            <span class="text-[#8b7a2e] text-[0.6rem] tracking-[0.3em] hidden sm:block"
-                  style="font-family: 'Space Mono', monospace;">
-              LURKING IN THE SHADOWS
-            </span>
+          <a href="#" class="flex items-center gap-2">
+            <img src="logo.png" alt="Backrooms logo"
+                 class="h-8 w-8 object-contain"
+                 style="filter: drop-shadow(0 0 6px rgba(212,200,122,0.35));" />
+            <div class="flex flex-col leading-none">
+              <span class="text-base font-bold tracking-[0.15em] text-[#d4c87a] flicker-slow"
+                    style="font-family: 'Space Mono', monospace;">
+                BACKROOMS
+              </span>
+              <span class="text-[#8b7a2e] text-[0.55rem] tracking-[0.25em] hidden sm:block"
+                    style="font-family: 'Space Mono', monospace;">
+                LURKING IN THE SHADOWS
+              </span>
+            </div>
           </a>
 
           <!-- Desktop links -->
@@ -44,6 +49,13 @@ interface NavLink { label: string; anchor: string; }
                 routerLink="/leaderboard"
                 class="text-[#b8a84a] hover:text-[#f0ecc4] text-xs tracking-widest font-mono uppercase transition-colors duration-200"
               >Leaderboard</a>
+            </li>
+            <li>
+              <a
+                routerLink="/demo"
+                class="px-3 py-1 border border-[#d4c87a]/30 text-[#d4c87a] hover:bg-[#d4c87a]/10
+                       text-xs tracking-widest font-mono uppercase transition-all duration-200"
+              >▶ Demo</a>
             </li>
           </ul>
 
@@ -139,6 +151,13 @@ interface NavLink { label: string; anchor: string; }
                   class="block text-[#b8a84a] hover:text-[#d4c87a] text-xs font-mono tracking-widest uppercase py-1 transition-colors"
                   (click)="menuOpen.set(false)"
                 >Leaderboard</a>
+              </li>
+              <li>
+                <a
+                  routerLink="/demo"
+                  class="block text-[#d4c87a] hover:text-[#f0ecc4] text-xs font-mono tracking-widest uppercase py-1 transition-colors"
+                  (click)="menuOpen.set(false)"
+                >▶ Demo</a>
               </li>
               <li class="pt-2 border-t border-[#d4c87a]/10 flex flex-col gap-2">
                 @if (auth.user()) {

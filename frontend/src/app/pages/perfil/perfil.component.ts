@@ -17,7 +17,10 @@ import { ReviewService } from '../../services/review.service';
         <div #card>
           <!-- Logo -->
           <div class="text-center mb-10">
-            <a routerLink="/" class="inline-block">
+            <a routerLink="/" class="inline-flex flex-col items-center gap-2">
+              <img src="logo.png" alt="Backrooms logo"
+                   class="h-12 w-12 object-contain"
+                   style="filter: drop-shadow(0 0 8px rgba(212,200,122,0.4));" />
               <span class="text-2xl font-bold tracking-[0.2em] text-[#d4c87a] flicker-slow"
                     style="font-family: 'Space Mono', monospace;">
                 BACKROOMS

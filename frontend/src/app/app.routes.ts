@@ -5,6 +5,7 @@ import { RegistroPageComponent }      from './pages/registro/registro.component'
 import { PerfilPageComponent }        from './pages/perfil/perfil.component';
 import { DescargaPageComponent }      from './pages/descarga/descarga.component';
 import { LeaderboardPageComponent }   from './pages/leaderboard/leaderboard.component';
+import { DemoPageComponent }          from './pages/demo/demo.component';
 import { PrivacidadComponent }        from './pages/legal/privacidad.component';
 import { TerminosComponent }          from './pages/legal/terminos.component';
 import { CookiesComponent }           from './pages/legal/cookies.component';
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'perfil',       component: PerfilPageComponent        },
   { path: 'descarga',     component: DescargaPageComponent      },
   { path: 'leaderboard',  component: LeaderboardPageComponent   },
+  { path: 'demo',         component: DemoPageComponent          },
   { path: 'privacidad',   component: PrivacidadComponent        },
   { path: 'terminos',     component: TerminosComponent          },
   { path: 'cookies',      component: CookiesComponent           },

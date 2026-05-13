@@ -13,7 +13,10 @@ import { ScoreService, Score } from '../../services/score.service';
 
         <!-- Header -->
         <div #header class="text-center mb-12">
-          <a routerLink="/" class="inline-block mb-8">
+          <a routerLink="/" class="inline-flex flex-col items-center gap-2 mb-8">
+            <img src="logo.png" alt="Backrooms logo"
+                 class="h-12 w-12 object-contain"
+                 style="filter: drop-shadow(0 0 8px rgba(212,200,122,0.4));" />
             <span class="text-2xl font-bold tracking-[0.2em] text-[#d4c87a] flicker-slow"
                   style="font-family: 'Space Mono', monospace;">
               BACKROOMS

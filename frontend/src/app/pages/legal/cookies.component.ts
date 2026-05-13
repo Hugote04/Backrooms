@@ -12,7 +12,10 @@ import { CookieBannerComponent } from '../../components/cookie-banner/cookie-ban
       <div class="max-w-3xl mx-auto">
 
         <div class="text-center mb-12">
-          <a routerLink="/" class="inline-block mb-6">
+          <a routerLink="/" class="inline-flex flex-col items-center gap-2 mb-6">
+            <img src="logo.png" alt="Backrooms logo"
+                 class="h-10 w-10 object-contain"
+                 style="filter: drop-shadow(0 0 6px rgba(212,200,122,0.4));" />
             <span class="text-xl font-bold tracking-[0.2em] text-[#d4c87a] flicker-slow"
                   style="font-family: 'Space Mono', monospace;">BACKROOMS</span>
           </a>

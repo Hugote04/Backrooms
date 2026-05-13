@@ -53,8 +53,8 @@ import { ButtonComponent } from '../../ui/button.component';
             &gt; Sobrevive. Descubre. No salgas.
           </p>
 
-          <!-- Botón CTA -->
-          <div #ctaButtons class="flex items-center justify-center">
+          <!-- Botones CTA -->
+          <div #ctaButtons class="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a routerLink="/descarga">
               <app-button variant="cta" size="lg">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,6 +63,15 @@ import { ButtonComponent } from '../../ui/button.component';
                 </svg>
                 [ DESCARGAR — GRATIS ]
               </app-button>
+            </a>
+            <a routerLink="/demo"
+               class="flex items-center gap-2 px-6 py-3 border border-[#d4c87a]/40 text-[#d4c87a]
+                      hover:bg-[#d4c87a]/10 hover:shadow-[0_0_20px_rgba(212,200,122,0.15)]
+                      font-mono text-sm tracking-widest uppercase transition-all duration-200">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              Jugar demo web
             </a>
           </div>
 
