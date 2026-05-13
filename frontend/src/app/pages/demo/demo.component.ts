@@ -312,6 +312,8 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
   startLoading() {
     this.phase.set('loading');
     this.progress.set(0);
+    this.sceneUnloaded = false;
+    this.patchConsole();
     this.loadUnity();
   }
 
@@ -346,6 +348,28 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
    * y los clics en los botones del juego no llegan a Unity.
    * Solución: re-enfocar el canvas en cualquier clic sobre él y al salir del pointer lock.
    */
+  private sceneUnloaded = false;
+
+  /** Recibe todos los errores de Unity y decide si mostrar el overlay de muerte */
+  onUnityError(msg: string) {
+    // Patrón 1: fallo directo al cargar escena (Title no en build)
+    const isSceneError =
+      msg.includes("couldn't be loaded") ||
+      msg.includes("Invalid scene") ||
+      msg.includes("Scene '");
+
+    // Patrón 2: crash en la escena de muerte (ArgumentNullException tras transición)
+    // Solo se dispara cuando ya hubo un unload de escena (sceneUnloaded = true)
+    const isDeathCrash =
+      this.sceneUnloaded &&
+      msg.includes('ArgumentNullException');
+
+    if (isSceneError || isDeathCrash) {
+      this.showDeathOverlay.set(true);
+      this.cdr.detectChanges();
+    }
+  }
+
   private setupCanvasFocusHandlers(canvas: HTMLCanvasElement) {
     this.boundRefocus = () => { canvas.focus(); };
     this.boundPointerLockChange = () => {
@@ -368,6 +392,17 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.boundPointerLockChange) {
       document.removeEventListener('pointerlockchange', this.boundPointerLockChange);
     }
+  }
+
+  private patchConsole() {
+    const orig = console.log.bind(console);
+    console.log = (...args: unknown[]) => {
+      const msg = args.join(' ');
+      if (msg.includes('Unloading') && msg.includes('Serialized files')) {
+        this.sceneUnloaded = true;
+      }
+      orig(...args);
+    };
   }
 
   private loadUnity() {
@@ -407,15 +442,10 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
         companyName:         'PFC',
         productName:         'Lurking In The Shadows',
         productVersion:      '1.0',
-        // Intercepta errores de Unity para detectar fallos de carga de escena
+        // Intercepta errores de Unity para detectar muerte del jugador
         showBanner: (msg: string, type: string) => {
-          if (type === 'error' && (
-            msg.includes("couldn't be loaded") ||
-            msg.includes("Invalid scene") ||
-            msg.includes("Scene '")
-          )) {
-            this.showDeathOverlay.set(true);
-            this.cdr.detectChanges();
+          if (type === 'error') {
+            this.onUnityError(msg);
           }
         },
       };
