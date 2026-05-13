@@ -257,6 +257,8 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private unityInstance: { SetFullscreen: (v: number) => void } | null = null;
   private ctx!: gsap.Context;
+  private boundRefocus!: () => void;
+  private boundPointerLockChange!: () => void;
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -272,6 +274,7 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.ctx?.revert();
+    this.removeCanvasFocusHandlers();
   }
 
   startLoading() {
@@ -287,6 +290,35 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   setFullscreen() {
     this.unityInstance?.SetFullscreen(1);
+  }
+
+  /**
+   * Cuando el pointer lock se libera (p.ej. al morir) el canvas pierde el foco
+   * y los clics en los botones del juego no llegan a Unity.
+   * Solución: re-enfocar el canvas en cualquier clic sobre él y al salir del pointer lock.
+   */
+  private setupCanvasFocusHandlers(canvas: HTMLCanvasElement) {
+    this.boundRefocus = () => { canvas.focus(); };
+    this.boundPointerLockChange = () => {
+      if (!document.pointerLockElement) {
+        // Pointer lock liberado: el siguiente clic debe re-enfocar el canvas
+        canvas.focus();
+      }
+    };
+    canvas.addEventListener('click',       this.boundRefocus);
+    canvas.addEventListener('mousedown',   this.boundRefocus);
+    document.addEventListener('pointerlockchange', this.boundPointerLockChange);
+  }
+
+  private removeCanvasFocusHandlers() {
+    const canvas = this.canvasRef?.nativeElement;
+    if (canvas && this.boundRefocus) {
+      canvas.removeEventListener('click',     this.boundRefocus);
+      canvas.removeEventListener('mousedown', this.boundRefocus);
+    }
+    if (this.boundPointerLockChange) {
+      document.removeEventListener('pointerlockchange', this.boundPointerLockChange);
+    }
   }
 
   private loadUnity() {
@@ -336,6 +368,8 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
           this.unityInstance = instance;
           this.phase.set('playing');
           this.cdr.detectChanges();
+          // Re-focus handlers: arregla botones de reinicio/menú tras muerte
+          setTimeout(() => this.setupCanvasFocusHandlers(canvas), 100);
           // Animar controles
           setTimeout(() => {
             gsap.from('#controlsBar > *', {
