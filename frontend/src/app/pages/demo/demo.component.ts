@@ -139,6 +139,37 @@ declare function createUnityInstance(
                       class="w-full aspect-video block bg-[#231F20]">
               </canvas>
 
+              <!-- Overlay de muerte / reinicio (aparece cuando Unity falla al cargar escena) -->
+              @if (showDeathOverlay()) {
+                <div class="absolute inset-0 flex flex-col items-center justify-center gap-8
+                            bg-black/85 backdrop-blur-sm"
+                     style="aspect-ratio:16/9;">
+                  <div class="text-center">
+                    <p class="text-red-400/80 font-mono text-2xl font-bold tracking-[0.3em] uppercase mb-2">
+                      HAS MUERTO
+                    </p>
+                    <p class="text-[#5a5828] font-mono text-xs tracking-widest">
+                      Lurking In The Shadows · Demo
+                    </p>
+                  </div>
+                  <div class="flex flex-col items-center gap-3">
+                    <button type="button"
+                            (click)="restartGame()"
+                            class="px-8 py-3 font-mono tracking-widest uppercase text-sm
+                                   border border-[#d4c87a]/60 text-[#d4c87a]
+                                   hover:bg-[#d4c87a]/15 hover:shadow-[0_0_20px_rgba(212,200,122,0.2)]
+                                   transition-all duration-200">
+                      ↺ Reiniciar
+                    </button>
+                    <a routerLink="/"
+                       class="text-[#5a5828] hover:text-[#8b7a2e] font-mono text-xs
+                              tracking-widest uppercase transition-colors">
+                      ← Volver al inicio
+                    </a>
+                  </div>
+                </div>
+              }
+
               <!-- Barra inferior del juego -->
               <div class="flex items-center justify-between px-4 py-2
                           bg-[#0a0900] border-t border-[#d4c87a]/10">
@@ -235,9 +266,10 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('heroSection') heroRef!: ElementRef;
   @ViewChild('splashScreen') splashRef!: ElementRef;
 
-  phase    = signal<'idle' | 'loading' | 'playing' | 'error'>('idle');
-  progress = signal(0);
-  errorMsg = signal('');
+  phase           = signal<'idle' | 'loading' | 'playing' | 'error'>('idle');
+  progress        = signal(0);
+  errorMsg        = signal('');
+  showDeathOverlay = signal(false);
 
   progressPct = computed(() => Math.round(this.progress() * 100));
   loadingLabel = computed(() => {
@@ -290,6 +322,23 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   setFullscreen() {
     this.unityInstance?.SetFullscreen(1);
+  }
+
+  /** Reinicia el juego recargando la instancia Unity completa */
+  restartGame() {
+    this.showDeathOverlay.set(false);
+    this.unityInstance = null;
+
+    // Eliminar el script loader para forzar recarga limpia
+    const old = document.getElementById('unity-loader-script');
+    old?.remove();
+
+    this.phase.set('loading');
+    this.progress.set(0);
+    this.cdr.detectChanges();
+
+    // Pequeña pausa para que el canvas se re-renderice antes de init
+    setTimeout(() => this.loadUnity(), 100);
   }
 
   /**
@@ -358,6 +407,17 @@ export class DemoPageComponent implements OnInit, AfterViewInit, OnDestroy {
         companyName:         'PFC',
         productName:         'Lurking In The Shadows',
         productVersion:      '1.0',
+        // Intercepta errores de Unity para detectar fallos de carga de escena
+        showBanner: (msg: string, type: string) => {
+          if (type === 'error' && (
+            msg.includes("couldn't be loaded") ||
+            msg.includes("Invalid scene") ||
+            msg.includes("Scene '")
+          )) {
+            this.showDeathOverlay.set(true);
+            this.cdr.detectChanges();
+          }
+        },
       };
 
       createUnityInstance(canvas, config, (p) => {
