@@ -29,7 +29,10 @@ export class AuthService {
     return this.sb.auth.signUp({
       email,
       password,
-      options: { data: { nombre: nombre ?? email.split('@')[0] } },
+      options: {
+        data: { nombre: nombre ?? email.split('@')[0] },
+        emailRedirectTo: window.location.origin,
+      },
     });
   }
 
