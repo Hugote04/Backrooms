@@ -33,10 +33,13 @@ export class ScoreService {
     return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
   }
 
-  /** Leaderboard público */
+  /** Leaderboard público — el backend devuelve { items: [...] } */
   async getLeaderboard(): Promise<Score[]> {
     try {
-      return await firstValueFrom(this.http.get<Score[]>(`${this.base}/leaderboard`));
+      const resp = await firstValueFrom(
+        this.http.get<{ items: Score[] }>(`${this.base}/leaderboard`)
+      );
+      return resp?.items ?? [];
     } catch {
       return [];
     }

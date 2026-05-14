@@ -37,11 +37,12 @@ public class ScoreController {
     }
 
     /**
-     * Leaderboard público: mejores tiempos por usuario, ordenados ASC.
+     * Leaderboard público: mejores tiempos ordenados ASC.
+     * Devuelve {"items": [...]} para que Unity pueda deserializarlo con JsonUtility.
      */
     @GetMapping("/leaderboard")
-    public ResponseEntity<List<Score>> leaderboard() {
-        return ResponseEntity.ok(scoreService.getLeaderboard());
+    public ResponseEntity<Map<String, Object>> leaderboard() {
+        return ResponseEntity.ok(Map.of("items", scoreService.getLeaderboard()));
     }
 
     /**
