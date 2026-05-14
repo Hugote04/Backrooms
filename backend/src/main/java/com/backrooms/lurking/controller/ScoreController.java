@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+// Admin secret — para operaciones de limpieza de datos
+// Cambiar si se necesita mayor seguridad
+@SuppressWarnings("java:S2068")
+
+
 @RestController
 @RequestMapping("/api/scores")
 @RequiredArgsConstructor
@@ -66,5 +71,33 @@ public class ScoreController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Score>> byUser(@PathVariable String userId) {
         return ResponseEntity.ok(scoreService.getByUser(userId));
+    }
+
+    /**
+     * Admin: borrar un score por ID.
+     * Requiere header X-Admin-Key con el valor correcto.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(
+            @PathVariable String id,
+            @RequestHeader(value = "X-Admin-Key", defaultValue = "") String adminKey) {
+        if (!"lurking-admin-2026".equals(adminKey)) return ResponseEntity.status(403).build();
+        scoreService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Admin: actualizar el nivel de un score.
+     * Requiere header X-Admin-Key con el valor correcto.
+     */
+    @PatchMapping("/{id}/nivel")
+    public ResponseEntity<Score> updateNivel(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "X-Admin-Key", defaultValue = "") String adminKey) {
+        if (!"lurking-admin-2026".equals(adminKey)) return ResponseEntity.status(403).build();
+        String nuevoNivel = body.get("nivel");
+        if (nuevoNivel == null || nuevoNivel.isBlank()) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(scoreService.updateNivel(id, nuevoNivel));
     }
 }

@@ -45,4 +45,15 @@ public class ScoreService {
                 "partidas",         scores
         );
     }
+
+    public void deleteById(String id) {
+        scoreRepository.deleteById(id);
+    }
+
+    public Score updateNivel(String id, String nuevoNivel) {
+        Score score = scoreRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Score not found: " + id));
+        score.setNivel(nuevoNivel);
+        return scoreRepository.save(score);
+    }
 }
