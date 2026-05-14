@@ -92,9 +92,34 @@ import { CommentService, Comment } from '../../services/comment.service';
 
         <!-- ── Lista de reseñas ──────────────────────────────── -->
         @if (loading()) {
-          <div class="text-center text-[#5a5828] font-mono text-xs tracking-widest py-12">
-            Cargando reseñas...
+          <!-- Skeleton cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            @for (n of skeletonCards; track n) {
+              <div class="bg-[#0e0d04] border border-[#d4c87a]/10 p-5 flex flex-col gap-3 animate-pulse">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-[#1a1808] shrink-0"></div>
+                  <div class="flex-1 flex flex-col gap-2">
+                    <div class="h-2.5 bg-[#1e1c08] rounded w-2/3"></div>
+                    <div class="h-2 bg-[#1a1808] rounded w-1/3"></div>
+                  </div>
+                  <div class="h-3 bg-[#1a1808] rounded w-16"></div>
+                </div>
+                <div class="flex flex-col gap-1.5 pt-1">
+                  <div class="h-2 bg-[#1a1808] rounded w-full"></div>
+                  <div class="h-2 bg-[#1a1808] rounded w-4/5"></div>
+                  <div class="h-2 bg-[#1a1808] rounded w-3/5"></div>
+                </div>
+                <div class="border-t border-[#d4c87a]/10 pt-3">
+                  <div class="h-2 bg-[#1a1808] rounded w-1/3"></div>
+                </div>
+              </div>
+            }
           </div>
+          @if (slowLoad()) {
+            <p class="text-center text-[#3a3620] font-mono text-xs tracking-widest mt-6">
+              El servidor está arrancando, puede tardar unos segundos...
+            </p>
+          }
         } @else if (reviews().length === 0) {
           <div class="text-center text-[#5a5828] font-mono py-12">
             <p class="text-sm tracking-widest">Sé el primero en dejar una reseña.</p>
@@ -288,7 +313,10 @@ export class ReviewsComponent implements OnInit, AfterViewInit, OnDestroy {
   commentDrafts = signal<Record<string, string>>({});
   commentingId  = signal('');
 
-  readonly stars = [1, 2, 3, 4, 5];
+  readonly stars        = [1, 2, 3, 4, 5];
+  readonly skeletonCards = [1, 2, 3];
+  slowLoad = signal(false);
+  private slowTimer?: ReturnType<typeof setTimeout>;
   private ctx!: gsap.Context;
 
   constructor(
@@ -313,7 +341,10 @@ export class ReviewsComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 100);
   }
 
-  ngOnDestroy() { this.ctx?.revert(); }
+  ngOnDestroy() {
+    this.ctx?.revert();
+    clearTimeout(this.slowTimer);
+  }
 
   // ── carga ─────────────────────────────────────────────────────
   private animateCards() {
@@ -331,17 +362,32 @@ export class ReviewsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async loadReviews() {
     this.loading.set(true);
+    this.slowLoad.set(false);
+    clearTimeout(this.slowTimer);
+
+    // Mostrar aviso de arranque lento tras 3 s
+    this.slowTimer = setTimeout(() => this.slowLoad.set(true), 3000);
+
     const data = await this.reviewService.getAll();
+    clearTimeout(this.slowTimer);
     this.reviews.set(data);
-    // pre-cargar contadores de comentarios
+
+    // Mostrar las cards YA — contadores se cargan en background
+    this.loading.set(false);
+    this.slowLoad.set(false);
+    setTimeout(() => this.animateCards(), 50);
+
+    // Cargar contadores de comentarios sin bloquear la UI
     const counts: Record<string, number> = {};
     await Promise.all(data.map(async r => {
-      const cs = await this.commentService.getByReview(r.id);
-      counts[r.id] = cs.length;
+      try {
+        const cs = await this.commentService.getByReview(r.id);
+        counts[r.id] = cs.length;
+      } catch {
+        counts[r.id] = 0;
+      }
     }));
     this.commentCounts.set(counts);
-    this.loading.set(false);
-    setTimeout(() => this.animateCards(), 50);
   }
 
   // ── crear reseña ──────────────────────────────────────────────
