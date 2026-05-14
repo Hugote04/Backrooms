@@ -124,7 +124,7 @@ export class DescargaPageComponent {
       label:   'Descargar para Windows',
       sub:     'Windows 10 / 11 · 64 bits · .zip',
       size:    '~167 MB',
-      url:     'https://drive.google.com/uc?export=download&id=1ue0FN7I3hCt4EtsiG-1Bs8hn7hMwkkuA',
+      url:     'https://drive.google.com/uc?export=download&id=1bQuzMtg5Ek3hoCdZkdl17Hr_J5IA1UKl',
       primary: true,
     },
     {
@@ -133,7 +133,7 @@ export class DescargaPageComponent {
       label:   'Descargar para macOS',
       sub:     'macOS 12+ · .zip con .app',
       size:    '~175 MB',
-      url:     'https://drive.google.com/uc?export=download&id=1tP-TB2kmeHkqSA06G2752uyNIdBVL21b',
+      url:     'https://drive.google.com/uc?export=download&id=1wnSchu5eDIduTfzVCy3Tb6Pbk5Ut7cgV',
       primary: false,
     },
     {
