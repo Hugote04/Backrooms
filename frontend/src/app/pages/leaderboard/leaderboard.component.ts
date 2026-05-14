@@ -126,6 +126,14 @@ import { ScoreService, Score } from '../../services/score.service';
     </div>
   `,
 })
+// Orden canónico de los tabs de nivel
+const NIVEL_ORDER = [
+  'Level 0 — Los Pasillos',
+  'Level 1 — Los Pasillos',
+  'Level 2 — Las Oficinas',
+  'Level 4 — Las Oficinas',
+];
+
 export class LeaderboardPageComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('header') headerRef!: ElementRef;
   @ViewChild('filters') filtersRef!: ElementRef;
@@ -143,8 +151,13 @@ export class LeaderboardPageComponent implements OnInit, AfterViewInit, OnDestro
   constructor(private scoreService: ScoreService) {}
 
   async ngOnInit() {
+    // getLeaderboard() ya normaliza los nombres de nivel
     this.scores = await this.scoreService.getLeaderboard();
-    this.niveles = [...new Set(this.scores.map(s => s.nivel))];
+    // Tabs en orden canónico — solo aparecen los niveles con entradas en BD
+    const enBD = new Set(this.scores.map(s => s.nivel));
+    const ordenados = NIVEL_ORDER.filter(n => enBD.has(n));
+    const desconocidos = [...enBD].filter(n => !NIVEL_ORDER.includes(n));
+    this.niveles = [...ordenados, ...desconocidos];
     this.filtered = this.scores;
     this.loading = false;
   }

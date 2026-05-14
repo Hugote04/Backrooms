@@ -21,6 +21,36 @@ export interface UserStats {
   partidas: Score[];
 }
 
+// Mapa de variantes de nombre de nivel → nombre canónico
+// Agrupa entradas antiguas/inconsistentes bajo el mismo tab
+const NIVEL_MAP: Record<string, string> = {
+  'Level 0 — Los Pasillos':  'Level 0 — Los Pasillos',
+  'Level 0 - Los Pasillos':  'Level 0 — Los Pasillos',
+  'Nivel 0':                 'Level 0 — Los Pasillos',
+  'Nivel 0 — Los Pasillos':  'Level 0 — Los Pasillos',
+  'Nivel 0 - Los Pasillos':  'Level 0 — Los Pasillos',
+  'Nivel 1 — Pasillos':      'Level 1 — Los Pasillos',
+  'Nivel 1 - Pasillos':      'Level 1 — Los Pasillos',
+  'Level 1 — Pasillos':      'Level 1 — Los Pasillos',
+  'Level 1 - Pasillos':      'Level 1 — Los Pasillos',
+  'Nivel 1 — Los Pasillos':  'Level 1 — Los Pasillos',
+  'Level 1 — Los Pasillos':  'Level 1 — Los Pasillos',
+  'Nivel 2 — Oficinas':      'Level 2 — Las Oficinas',
+  'Nivel 2 - Oficinas':      'Level 2 — Las Oficinas',
+  'Level 2 — Oficinas':      'Level 2 — Las Oficinas',
+  'Level 2 - Oficinas':      'Level 2 — Las Oficinas',
+  'Nivel 2 — Las Oficinas':  'Level 2 — Las Oficinas',
+  'Level 2 — Las Oficinas':  'Level 2 — Las Oficinas',
+  'Level 4 — Las Oficinas':  'Level 4 — Las Oficinas',
+  'Level 4 - Las Oficinas':  'Level 4 — Las Oficinas',
+  'Nivel 4 — Las Oficinas':  'Level 4 — Las Oficinas',
+  'Nivel 4 - Las Oficinas':  'Level 4 — Las Oficinas',
+};
+
+function normalizeNivel(n: string): string {
+  return NIVEL_MAP[n] ?? n;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ScoreService {
   private readonly base = `${environment.apiUrl}/scores`;
@@ -39,7 +69,8 @@ export class ScoreService {
       const resp = await firstValueFrom(
         this.http.get<{ items: Score[] }>(`${this.base}/leaderboard`)
       );
-      return resp?.items ?? [];
+      // Normalizar nombres de nivel antes de devolver
+      return (resp?.items ?? []).map(s => ({ ...s, nivel: normalizeNivel(s.nivel) }));
     } catch {
       return [];
     }
@@ -48,10 +79,11 @@ export class ScoreService {
   /** Stats del usuario — usa el endpoint público /user/{id} y calcula en cliente */
   async getMyStats(userId: string): Promise<UserStats | null> {
     try {
-      const scores = await firstValueFrom(
+      const raw = await firstValueFrom(
         this.http.get<Score[]>(`${this.base}/user/${userId}`)
       );
-      if (!scores || scores.length === 0)
+      const scores = (raw ?? []).map(s => ({ ...s, nivel: normalizeNivel(s.nivel) }));
+      if (scores.length === 0)
         return { totalPartidas: 0, puzlesResueltos: 0, mejorTiempo: 0, partidas: [] };
       return {
         totalPartidas:   scores.length,
