@@ -3,6 +3,14 @@ import { RouterLink } from '@angular/router';
 import { gsap } from 'gsap';
 import { ScoreService, Score } from '../../services/score.service';
 
+// Orden canónico de los tabs de nivel
+const NIVEL_ORDER = [
+  'Level 0 — Los Pasillos',
+  'Level 1 — Los Pasillos',
+  'Level 2 — Las Oficinas',
+  'Level 4 — Las Oficinas',
+];
+
 @Component({
   selector: 'app-leaderboard-page',
   standalone: true,
@@ -126,14 +134,6 @@ import { ScoreService, Score } from '../../services/score.service';
     </div>
   `,
 })
-// Orden canónico de los tabs de nivel
-const NIVEL_ORDER = [
-  'Level 0 — Los Pasillos',
-  'Level 1 — Los Pasillos',
-  'Level 2 — Las Oficinas',
-  'Level 4 — Las Oficinas',
-];
-
 export class LeaderboardPageComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('header') headerRef!: ElementRef;
   @ViewChild('filters') filtersRef!: ElementRef;
