@@ -1,12 +1,16 @@
-import { Component, AfterViewInit, OnDestroy, ViewChild, ElementRef, signal } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, ViewChild, ElementRef, signal, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ButtonComponent } from '../../ui/button.component';
 import { InputComponent } from '../../ui/input.component';
 import { TextareaComponent } from '../../ui/textarea.component';
 
-type SubmissionState = 'idle' | 'loading' | 'success';
+type SubmissionState = 'idle' | 'loading' | 'success' | 'error';
+
+const FORMSPREE_URL = 'https://formspree.io/f/mvzljpnl';
 
 @Component({
   selector: 'app-contact',
@@ -100,6 +104,22 @@ type SubmissionState = 'idle' | 'loading' | 'success';
                   class="mt-6 text-[#b8a84a] hover:text-[#d4c87a] font-mono text-xs tracking-widest uppercase transition-colors"
                 >Enviar otro mensaje</button>
               </div>
+            } @else if (state() === 'error') {
+              <div class="flex flex-col items-center justify-center py-10 text-center">
+                <div class="w-14 h-14 bg-red-900/20 border border-red-500/30
+                             flex items-center justify-center mb-4">
+                  <svg class="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </div>
+                <h3 class="text-red-400 font-mono font-bold text-sm tracking-widest uppercase mb-1">Error al enviar</h3>
+                <p class="text-[#5a5828] font-mono text-xs">Inténtalo de nuevo o escríbenos directamente.</p>
+                <button
+                  type="button"
+                  (click)="reset()"
+                  class="mt-6 text-[#b8a84a] hover:text-[#d4c87a] font-mono text-xs tracking-widest uppercase transition-colors"
+                >Reintentar</button>
+              </div>
             } @else {
               <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
 
@@ -152,6 +172,8 @@ type SubmissionState = 'idle' | 'loading' | 'success';
 export class ContactComponent implements AfterViewInit, OnDestroy {
   @ViewChild('heading')     headingRef!:    ElementRef;
   @ViewChild('formWrapper') formWrapperRef!: ElementRef;
+
+  private http = inject(HttpClient);
 
   form = new FormGroup({
     nombre:  new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -208,8 +230,20 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
   async onSubmit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.state.set('loading');
-    await new Promise((r) => setTimeout(r, 600));
-    this.state.set('success');
+    const { nombre, email, asunto, mensaje } = this.form.getRawValue();
+    try {
+      await firstValueFrom(
+        this.http.post(
+          FORMSPREE_URL,
+          { name: nombre, email, _subject: asunto, message: mensaje },
+          { headers: new HttpHeaders({ Accept: 'application/json' }) }
+        )
+      );
+      this.state.set('success');
+      this.form.reset();
+    } catch {
+      this.state.set('error');
+    }
   }
 
   reset() {
