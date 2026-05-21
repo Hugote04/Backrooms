@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChildren, ViewChild, QueryList } from '@angular/core';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { LucideAngularModule, Gamepad2, Shield, Users, Zap } from 'lucide-angular';
+import { LucideAngularModule, Gamepad2, Shield, Zap } from 'lucide-angular';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -27,7 +27,7 @@ interface Feature { icon: any; title: string; description: string; }
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           @for (feature of features; track feature.title) {
             <div
               #cardRef
@@ -63,11 +63,6 @@ export class FeaturesComponent implements AfterViewInit, OnDestroy {
       icon: Shield,
       title: 'Descarga Segura',
       description: 'Instalador verificado y sin malware. Confían en nosotros miles de jugadores de todo el mundo.',
-    },
-    {
-      icon: Users,
-      title: 'Multijugador',
-      description: 'Únete a tus amigos o enfréntate a lo desconocido solo. Compatible con hasta 4 jugadores en cooperativo.',
     },
     {
       icon: Zap,
