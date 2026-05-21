@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { gsap } from 'gsap';
@@ -279,6 +279,7 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private scoreService: ScoreService,
     private reviewService: ReviewService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
@@ -299,6 +300,7 @@ export class PerfilPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.stats = await this.scoreService.getMyStats(this.userId);
     this.loadingStats = false;
     this.editName    = this.displayName;
+    this.cdr.detectChanges();
   }
 
   ngAfterViewInit() {

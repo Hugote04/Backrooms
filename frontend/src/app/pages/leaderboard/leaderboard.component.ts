@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { gsap } from 'gsap';
 import { ScoreService, Score } from '../../services/score.service';
@@ -68,18 +68,17 @@ const NIVEL_ORDER = [
             </div>
           } @else {
             <!-- Cabecera -->
-            <div class="grid grid-cols-[3rem_1fr_1fr_6rem_6rem] gap-4 px-6 py-3
+            <div class="grid grid-cols-[3rem_1fr_1fr_6rem] gap-4 px-6 py-3
                          border-b border-[#d4c87a]/10">
               <span class="text-[#5a5828] font-mono text-[0.65rem] tracking-widest uppercase">#</span>
               <span class="text-[#5a5828] font-mono text-[0.65rem] tracking-widest uppercase">Jugador</span>
               <span class="text-[#5a5828] font-mono text-[0.65rem] tracking-widest uppercase">Nivel</span>
               <span class="text-[#5a5828] font-mono text-[0.65rem] tracking-widest uppercase text-right">Tiempo</span>
-              <span class="text-[#5a5828] font-mono text-[0.65rem] tracking-widest uppercase text-right">Puzles</span>
             </div>
 
             @for (score of filtered; track score.id; let i = $index) {
               <div
-                class="grid grid-cols-[3rem_1fr_1fr_6rem_6rem] gap-4 px-6 py-4
+                class="grid grid-cols-[3rem_1fr_1fr_6rem] gap-4 px-6 py-4
                        hover:bg-[#d4c87a]/[0.03] transition-colors"
                 [style.border-bottom]="i === 0 ? '1px solid rgba(212,200,122,0.2)' : '1px solid rgba(212,200,122,0.05)'"
               >
@@ -109,11 +108,6 @@ const NIVEL_ORDER = [
                       [class.text-[#d4c87a]]="i === 0"
                       [class.text-[#b8a84a]]="i > 0">
                   {{ formatTime(score.tiempoSegundos) }}
-                </span>
-
-                <!-- Puzles -->
-                <span class="text-[#5a5828] font-mono text-xs text-right self-center">
-                  {{ score.puzlesResueltos }}
                 </span>
               </div>
             }
@@ -148,7 +142,7 @@ export class LeaderboardPageComponent implements OnInit, AfterViewInit, OnDestro
 
   private ctx!: gsap.Context;
 
-  constructor(private scoreService: ScoreService) {}
+  constructor(private scoreService: ScoreService, private cdr: ChangeDetectorRef) {}
 
   async ngOnInit() {
     // getLeaderboard() ya normaliza los nombres de nivel
@@ -160,6 +154,7 @@ export class LeaderboardPageComponent implements OnInit, AfterViewInit, OnDestro
     this.niveles = [...ordenados, ...desconocidos];
     this.filtered = this.scores;
     this.loading = false;
+    this.cdr.detectChanges();
   }
 
   ngAfterViewInit() {
